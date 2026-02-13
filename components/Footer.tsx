@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <Link href="/" className="inline-flex items-center hover:opacity-90 transition">
-              <BrandLogo className="h-9 w-28" />
+              <BrandLogo className="h-20 w-28" />
             </Link>
             <p className="text-sm text-[var(--accent)] mt-2">Лаконичные букеты и композиции</p>
             <p className="text-sm text-[var(--accent-strong)] mt-1">Красота без лишнего — доставляем по городу.</p>

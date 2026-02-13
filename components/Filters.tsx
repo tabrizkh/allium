@@ -1,5 +1,5 @@
 "use client";
-import { Filter, ChevronDown, Check, RotateCcw } from "lucide-react";
+import { ChevronDown, Check, RotateCcw } from "lucide-react";
 import { useShopStore } from "../store/useShopStore";
 import type { Recipient, Occasion } from "../lib/types";
 import { useRef, useEffect, useState } from "react";
