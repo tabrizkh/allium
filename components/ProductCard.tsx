@@ -5,6 +5,7 @@ import { useShopStore } from "../store/useShopStore";
 import type { Product } from "../lib/types";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import ProductPopup from "./ProductPopup";
 
 export default function ProductCard({ product }: { product: Product }) {
   const { addToCart, toggleFavorite, favorites } = useShopStore();
@@ -13,9 +14,26 @@ export default function ProductCard({ product }: { product: Product }) {
   const router = useRouter();
   const [imgFailed, setImgFailed] = useState(false);
   const fallbackSrc = `https://picsum.photos/seed/${product.id}-flowers/600/800`;
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className="group rounded-2xl  bg-[var(--background)] overflow-hidden shadow-sm hover:shadow-lg transition break-inside-avoid mb-6 relative">
+    <>
+      <div
+        className="group rounded-2xl bg-[var(--background)] overflow-hidden shadow-sm hover:shadow-lg transition break-inside-avoid mb-6 relative cursor-pointer"
+        role="button"
+        tabIndex={0}
+        aria-label={`Открыть товар: ${product.title}`}
+        onClick={(e) => {
+          const target = e.target as HTMLElement | null;
+          if (!target) return;
+          if (target.closest("button")) return;
+          if (target.closest("a")) return;
+          setOpen(true);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") setOpen(true);
+        }}
+      >
       <div className="relative">
         <Image
           src={imgFailed ? fallbackSrc : product.image}
@@ -55,6 +73,9 @@ export default function ProductCard({ product }: { product: Product }) {
           </button>
         </div>
       </div>
-    </div>
+      </div>
+
+      {open && <ProductPopup product={product} onClose={() => setOpen(false)} />}
+    </>
   );
 }

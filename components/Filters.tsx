@@ -70,7 +70,7 @@ export default function Filters() {
             type="button"
             onClick={() => setOpenRecipients((v) => !v)}
             aria-expanded={openRecipients}
-            className={`w-full flex items-center justify-between bg-[var(--background)] rounded-xl border px-3 py-2 text-sm transition ${
+            className={`w-full flex items-center justify-between bg-[var(--background)] rounded-xl border px-3 py-2 text-sm transition cursor-pointer ${
               selectedRecipients.length
                 ? "border-[var(--accent-strong)]/60 bg-[var(--accent-strong)]/20 text-[var(--foreground)] shadow-sm"
                 : "border-[var(--accent-strong)]/60 hover:bg-[var(--accent-strong)]/15 "
@@ -95,7 +95,7 @@ export default function Filters() {
                     onClick={() => toggleRecipient(r)}
                     role="option"
                     aria-selected={active}
-                    className={`flex w-full items-center justify-between rounded-sm px-2 py-2 text-sm transition ${
+                    className={`flex w-full items-center justify-between rounded-sm px-2 py-2 text-sm transition cursor-pointer ${
                       active ? "bg-[var(--accent-strong)]/20 text-[var(--foreground)]" : "hover:bg-[var(--accent-strong)]/15"
                     }`}
                   >
@@ -114,7 +114,7 @@ export default function Filters() {
             type="button"
             onClick={() => setOpenOccasions((v) => !v)}
             aria-expanded={openOccasions}
-            className={`w-full flex items-center justify-between bg-[var(--background)] rounded-xl border px-3 py-2 text-sm transition ${
+            className={`w-full flex items-center justify-between bg-[var(--background)] rounded-xl border px-3 py-2 text-sm transition cursor-pointer ${
               selectedOccasions.length
                 ? "border-[var(--accent-strong)]/60 bg-[var(--accent-strong)]/20 text-[var(--foreground)] shadow-sm "
                 : "border-[var(--accent-strong)]/60 hover:bg-[var(--accent-strong)]/15 "
@@ -139,7 +139,7 @@ export default function Filters() {
                     onClick={() => toggleOccasion(o)}
                     role="option"
                     aria-selected={active}
-                    className={`flex w-full items-center justify-between rounded-sm px-2 py-2 text-sm transition ${
+                    className={`flex w-full items-center justify-between rounded-sm px-2 py-2 text-sm transition cursor-pointer ${
                       active ? "bg-[var(--accent-strong)]/20 text-[var(--foreground)]" : "hover:bg-[var(--accent-strong)]/15"
                     }`}
                   >
@@ -197,7 +197,7 @@ export default function Filters() {
               clearOccasions();
               resetPriceRange();
             }}
-            className="inline-flex h-full items-center justify-center rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--background)] px-3 py-2 text-sm hover:bg-[var(--accent-strong)]/15"
+            className="inline-flex h-full items-center justify-center rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--background)] px-3 py-2 text-sm hover:bg-[var(--accent-strong)]/15 cursor-pointer"
           >
             <RotateCcw size={18} />
           </button>

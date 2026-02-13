@@ -16,6 +16,8 @@ type State = {
   favorites: string[]; // product ids
   cart: Record<string, number>; // product id -> qty
   user: User | null;
+  authPanelOpen: boolean;
+  authPanelTab: "login" | "register";
 };
 
 type Actions = {
@@ -34,6 +36,9 @@ type Actions = {
   login: (email: string) => void;
   logout: () => void;
   register: (name: string, email: string) => void;
+  openAuthPanel: (tab?: "login" | "register") => void;
+  closeAuthPanel: () => void;
+  setAuthPanelTab: (tab: "login" | "register") => void;
 };
 
 export const useShopStore = create<State & Actions>()(
@@ -51,6 +56,8 @@ export const useShopStore = create<State & Actions>()(
       favorites: [],
       cart: {},
       user: null,
+      authPanelOpen: false,
+      authPanelTab: "register",
       setSearch: (q) => set({ search: q }),
       toggleCategory: (c) => {
         const arr = get().selectedCategories;
@@ -89,15 +96,19 @@ export const useShopStore = create<State & Actions>()(
       },
       toggleFavorite: (id) => {
         const arr = get().favorites;
-        const next = arr.includes(id)
-          ? arr.filter((x) => x !== id)
-          : [...arr, id];
+        const user = get().user;
+        const wasIn = arr.includes(id);
+        const next = wasIn ? arr.filter((x) => x !== id) : [...arr, id];
         set({ favorites: next });
+        if (!user && !wasIn && next.length === 1) set({ authPanelOpen: true, authPanelTab: "register" });
       },
       addToCart: (id) => {
-        const cart = { ...get().cart };
+        const prevCart = get().cart;
+        const prevCount = Object.values(prevCart).reduce((a, b) => a + b, 0);
+        const cart = { ...prevCart };
         cart[id] = (cart[id] || 0) + 1;
         set({ cart });
+        if (!get().user && prevCount === 0) set({ authPanelOpen: true, authPanelTab: "register" });
       },
       removeFromCart: (id) => {
         const cart = { ...get().cart };
@@ -109,13 +120,16 @@ export const useShopStore = create<State & Actions>()(
       login: (email) => {
         const current = get().user;
         const next: User = current?.email === email ? current! : { id: "local", name: "Гость", email };
-        set({ user: next });
+        set({ user: next, authPanelOpen: false });
       },
       logout: () => set({ user: null }),
       register: (name, email) => {
         const next: User = { id: "local", name, email };
-        set({ user: next });
+        set({ user: next, authPanelOpen: false });
       },
+      openAuthPanel: (tab) => set({ authPanelOpen: true, authPanelTab: tab || get().authPanelTab }),
+      closeAuthPanel: () => set({ authPanelOpen: false }),
+      setAuthPanelTab: (tab) => set({ authPanelTab: tab }),
     }),
     {
       name: "allium-store",
@@ -127,6 +141,7 @@ export const useShopStore = create<State & Actions>()(
         const so = p?.selectedOccasions;
         const pr = p?.priceRange as [number, number] | undefined;
         const u = p?.user as User | undefined;
+        const authPanelTab = p?.authPanelTab as State["authPanelTab"] | undefined;
         return {
           // Prefer current seed for products to reflect latest data updates
           ...current,
@@ -137,6 +152,8 @@ export const useShopStore = create<State & Actions>()(
           selectedRecipients: Array.isArray(sr) ? (sr as Recipient[]) : [],
           selectedOccasions: Array.isArray(so) ? (so as Occasion[]) : [],
           user: u ? u : null,
+          authPanelOpen: false,
+          authPanelTab: authPanelTab === "login" || authPanelTab === "register" ? authPanelTab : "register",
           priceRange:
             Array.isArray(pr) && pr.length === 2
               ? pr

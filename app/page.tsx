@@ -5,56 +5,20 @@ import Filters from "../components/Filters";
 
 import Categories from "../components/Categories";
 import ProductCard from "../components/ProductCard";
-import { useFilteredProducts, useShopStore } from "../store/useShopStore";
-import type { Category } from "../lib/types";
-import Image from "next/image";
+import { useFilteredProducts } from "../store/useShopStore";
  
 import Features from "../components/Features";
 import Trending from "../components/Trending";
+import CategoryTiles from "../components/CategoryTiles";
 
 export default function Home() {
   const list = useFilteredProducts();
-  const { toggleCategory, clearCategories } = useShopStore();
-
-  const tiles = [
-    { title: "Цветы", image: "/6.webp", value: "flowers" },
-    { title: "Вазы", image: "/vase.webp", value: "vases" },
-    { title: "Декор", image: "/dekor.jpg", value: "decorations" },
-    { title: "Подарки", image: "/podarok.webp", value: "gifts" },
-    { title: "Сеты", image: "/sets.jpg", value: "sets" },
-    { title: "Букеты", image: "/bukets.webp", value: "bouquets" },
-  ];
-
-  
-
-  const goToCatalog = () => {
-    const el = document.querySelector("#catalog");
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
 
   
   return (
     <div className="min-h-screen ">
       <Header />
-      <section className="mx-auto max-w-6xl px-0 mt-3">
-        <div className="flex justify-center overflow-x-auto no-scrollbar gap-2 sm:grid sm:grid-cols-6 sm:gap-3 sm:overflow-visible">
-          {tiles.map((t, idx) => (
-            <button
-              key={idx}
-              onClick={() => { clearCategories(); toggleCategory(t.value as Category); goToCatalog(); }}
-              className="group flex flex-col items-center gap-2 cursor-pointer shrink-0"
-              aria-label={t.title}
-            >
-              <span className="inline-block rounded-full overflow-hidden border border-[var(--accent-strong)] bg-[var(--accent-strong)]/10 p-0.5 sm:p-1 shadow-md transition group-hover:scale-105">
-                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden">
-                  <Image src={t.image} alt={t.title} width={64} height={64} className="w-full h-full object-cover" />
-                </div>
-              </span>
-              <span className="text-[11px] sm:text-xs font-medium text-center text-[var(--foreground)]">{t.title}</span>
-            </button>
-          ))}
-        </div>
-      </section>
+      <CategoryTiles />
 
       <HeroShowcase />
       <Trending />

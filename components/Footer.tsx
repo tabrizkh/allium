@@ -1,5 +1,6 @@
 import { Phone, Mail, MapPin, Instagram, Facebook } from "lucide-react";
 import Link from "next/link";
+import BrandLogo from "./BrandLogo";
 
 export default function Footer() {
   return (
@@ -7,7 +8,9 @@ export default function Footer() {
       <div className="mx-auto max-w-6xl px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <h2 className="text-xl font-semibold">allium</h2>
+            <Link href="/" className="inline-flex items-center hover:opacity-90 transition">
+              <BrandLogo className="h-9 w-28" />
+            </Link>
             <p className="text-sm text-[var(--accent)] mt-2">Лаконичные букеты и композиции</p>
             <p className="text-sm text-[var(--accent-strong)] mt-1">Красота без лишнего — доставляем по городу.</p>
           </div>

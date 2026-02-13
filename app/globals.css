@@ -7,7 +7,7 @@
   --accent: #9ca3afb9;      /* zinc-400 как нейтральный акцент */
   --accent-strong: #71717a; /* zinc-500 для активных состояний */
   /* Фон основной кнопки на карточке (по умолчанию акцент) */
-  --buy-button-bg: var(--accent);
+  --buy-button-bg: #f2e2ce8f;
   /* Цвета бейджей/активных индикаторов (фавориты, счётчики) */
   --badge-bg: var(--accent-strong);
   --badge-fg: var(--foreground);
@@ -34,7 +34,7 @@ html { scroll-behavior: smooth; }
   --accent: #000000a9;     /* zinc-500 */
   --accent-strong: #4b556369; /* zinc-600 */
   /* В светлой теме фон кнопки — чисто белый */
-  --buy-button-bg: #f2e2ce;
+  --buy-button-bg: #f2e2ce8f;
   /* В светлой теме текст бейджа — белый для контраста */
   --badge-bg: var(--accent-strong);
   --badge-fg: #ffffff;
@@ -132,3 +132,6 @@ body {
 
 /* Курсор-указатель для интерактивных элементов */
 button, [role="button"], .cursor-pointer { cursor: pointer; }
+
+.allium-logo { filter: invert(1) brightness(1.4); }
+[data-theme="light"] .allium-logo { filter: none; }

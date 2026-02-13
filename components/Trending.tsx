@@ -15,7 +15,7 @@ export default function Trending() {
     el.scrollBy({ left: dir * 300, behavior: "smooth" });
   };
   return (
-    <section className="mx-auto max-w-6xl px-4 mt-6">
+    <section id="promos" className="mx-auto max-w-6xl px-4 mt-6">
       <div className="flex items-center justify-end">
         {/* <h2 className="text-xl font-semibold">Тренды недели</h2> */}
         <div className="inline-flex gap-2">

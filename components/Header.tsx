@@ -1,12 +1,15 @@
 "use client";
 import Link from "next/link";
-import Image from "next/image";
-import { Heart, Search, ShoppingBag, User, Sun, Moon, X, Globe, Instagram, Facebook, Menu } from "lucide-react";
+import { Heart, Search, ShoppingBag, User, Sun, Moon, X, Globe, Menu } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useShopStore } from "../store/useShopStore";
+import ShopPanels from "./ShopPanels";
+import AuthPanel from "./AuthPanel";
+import MenuPanel from "./MenuPanel";
+import BrandLogo from "./BrandLogo";
 
 export default function Header() {
-  const { setSearch, favorites, cart, products, addToCart, removeFromCart, toggleFavorite } = useShopStore();
+  const { setSearch, favorites, cart, openAuthPanel, user } = useShopStore();
   const favCount = Array.isArray(favorites) ? favorites.length : 0;
   const cartCount = Object.values(cart).reduce((a, b) => a + b, 0);
   const [theme, setTheme] = useState<string>(() => (typeof document !== "undefined" && document.documentElement.getAttribute("data-theme")) || "light");
@@ -31,8 +34,18 @@ export default function Header() {
   useEffect(() => {
     const update = () => setHeaderHeight(headerRef.current ? headerRef.current.offsetHeight : 0);
     update();
+
+    let ro: ResizeObserver | null = null;
+    if (typeof window !== "undefined" && headerRef.current && "ResizeObserver" in window) {
+      ro = new ResizeObserver(() => update());
+      ro.observe(headerRef.current);
+    }
+
     window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      ro?.disconnect();
+    };
   }, []);
 
   const toggleTheme = () => {
@@ -48,9 +61,18 @@ export default function Header() {
   };
   const closeMobileSearch = () => setMobileSearchOpen(false);
 
-  const openFavorites = () => { setFavoritesOpen(true); setMobileSearchOpen(false); };
+  const openMenu = () => {
+    setMenuOpen(true);
+    setFavoritesOpen(false);
+    setCartOpen(false);
+    setMobileSearchOpen(false);
+    setLangOpen(false);
+  };
+  const closeMenu = () => setMenuOpen(false);
+
+  const openFavorites = () => { setFavoritesOpen(true); setCartOpen(false); setMenuOpen(false); setMobileSearchOpen(false); };
   const closeFavorites = () => setFavoritesOpen(false);
-  const openCart = () => { setCartOpen(true); setMobileSearchOpen(false); };
+  const openCart = () => { setCartOpen(true); setFavoritesOpen(false); setMenuOpen(false); setMobileSearchOpen(false); };
   const closeCart = () => setCartOpen(false);
   const applyLang = (l: string) => {
     setLang(l);
@@ -61,47 +83,49 @@ export default function Header() {
 
   return (
     <header ref={headerRef} className="sticky top-0 z-20 bg-[var(--background)] backdrop-blur border-b border-[var(--accent-strong)]/60">
-      <div className="mx-auto max-w-6xl px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-4 text-[var(--foreground)]">
-        <Link href="/" className="text-2xl font-semibold tracking-tight  hover:opacity-90 transition">
-          allium
-        </Link>
-        <button type="button" onClick={() => setMenuOpen(true)} className="sm:hidden inline-flex items-center justify-center rounded-xl p-2 hover:bg-[var(--accent-strong)]/20 transition" aria-label="Меню">
-          <Menu size={18} />
-        </button>
-        <button type="button" onClick={openMobileSearch} className="sm:hidden inline-flex items-center justify-center rounded-xl p-2 hover:bg-[var(--accent-strong)]/20 transition" aria-label="Поиск">
-          <Search size={18} />
-        </button>
-        <button
-          type="button"
-          onClick={() => setMenuOpen(true)}
-          aria-label="Меню"
-          title="Меню"
-          className="hidden sm:inline-flex items-center justify-center rounded-xl p-2 hover:bg-[var(--accent-strong)]/20 transition ml-1"
-        >
-          <Menu size={18} />
-        </button>
-        <div className="flex-1" />
-        <div className="relative w-full max-w-md hidden sm:block">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--accent)]">
+      <div className="mx-auto max-w-6xl px-3 sm:px-4   flex items-center justify-between text-[var(--foreground)]">
+        <div className="flex items-center gap-2 sm:gap-4 flex-1 justify-start">
+          <button
+            type="button"
+            onClick={openMenu}
+            aria-label="Меню"
+            title="Меню"
+            className="inline-flex items-center justify-center rounded-xl p-2 hover:bg-[var(--accent-strong)]/20 transition"
+          >
+            <Menu size={20} />
+          </button>
+          <button type="button" onClick={openMobileSearch} className="sm:hidden inline-flex items-center justify-center rounded-xl p-2 hover:bg-[var(--accent-strong)]/20 transition" aria-label="Поиск">
             <Search size={18} />
-          </span>
-          <input
-            type="text"
-            placeholder="Поиск по названию или описанию..."
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--accent)] pl-10 pr-3 h-9 sm:h-10 text-sm outline-none focus:ring-2 focus:ring-[var(--accent-strong)] focus:border-[var(--accent-strong)]/60"
-          />
+          </button>
+          <div className="relative w-full max-w-[160px] md:max-w-xs hidden sm:block">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--accent)]">
+              <Search size={18} />
+            </span>
+            <input
+              type="text"
+              placeholder="Поиск..."
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--accent)] pl-10 pr-3 h-9 sm:h-10 text-sm outline-none focus:ring-2 focus:ring-[var(--accent-strong)] focus:border-[var(--accent-strong)]/60"
+            />
+          </div>
         </div>
-        <nav className="flex items-center gap-2 sm:gap-3">
+
+        <div className="flex-0 mx-4">
+          <Link href="/" className="inline-flex items-center justify-center hover:opacity-90 transition">
+            <BrandLogo className="h-8 sm:h-20 w-24 sm:w-28" />
+          </Link>
+        </div>
+
+        <nav className="flex items-center gap-2 sm:gap-3 flex-1 justify-end">
           <button
             type="button"
             onClick={toggleTheme}
             aria-label="Переключить тему"
             title="Переключить тему"
-            className="inline-flex items-center gap-2 rounded-xl px-2 sm:px-3 py-2 hover:bg-[var(--accent-strong)]/20 transition text-[var(--foreground)]"
+            className="hidden sm:inline-flex items-center gap-2 rounded-xl px-2 sm:px-3 py-2 hover:bg-[var(--accent-strong)]/20 transition text-[var(--foreground)]"
           >
             {theme === "light" ? <Sun size={20} /> : <Moon size={20} />}
-            <span className="hidden sm:inline text-sm">{theme === "light" ? "Светлая" : "Тёмная"}</span>
+            <span className="hidden xl:inline text-sm">{theme === "light" ? "Светлая" : "Тёмная"}</span>
           </button>
           <div className="relative hidden sm:block">
             <button
@@ -112,7 +136,7 @@ export default function Header() {
               className="inline-flex items-center gap-2 rounded-xl px-2 sm:px-3 py-2 hover:bg-[var(--accent-strong)]/20 transition text-[var(--foreground)]"
             >
               <Globe size={20} />
-              <span className="hidden sm:inline text-sm uppercase">{lang}</span>
+              <span className="hidden xl:inline text-sm uppercase">{lang}</span>
             </button>
             {langOpen && (
               <div className="absolute right-0 top-full mt-2 z-50 min-w-[160px] rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--panel-bg)] shadow-md p-1">
@@ -124,7 +148,7 @@ export default function Header() {
           </div>
           <button
             onClick={openFavorites}
-            className="relative inline-flex items-center gap-2 rounded-xl px-2 sm:px-3 py-2 hover:bg-[var(--accent-strong)]/20 transition"
+            className={`relative inline-flex items-center gap-2 rounded-xl px-2 sm:px-3 py-2 hover:bg-[var(--accent-strong)]/20 transition ${favCount > 0 ? "bg-[var(--accent-strong)]/15" : ""}`}
             title="Избранное"
             aria-haspopup="dialog"
           >
@@ -137,7 +161,7 @@ export default function Header() {
           </button>
           <button
             onClick={openCart}
-            className="relative inline-flex items-center gap-2 rounded-xl px-2 sm:px-3 py-2 hover:bg-[var(--accent-strong)]/20 transition"
+            className={`relative inline-flex items-center gap-2 rounded-xl px-2 sm:px-3 py-2 hover:bg-[var(--accent-strong)]/20 transition ${cartCount > 0 ? "bg-[var(--accent-strong)]/15" : ""}`}
             title="Корзина"
             aria-haspopup="dialog"
           >
@@ -148,13 +172,15 @@ export default function Header() {
               </span>
             )}
           </button>
-          <Link
-            href="/auth"
-            className="inline-flex items-center gap-2 rounded-xl px-2 sm:px-3 py-2 hover:bg-[var(--accent-strong)]/20 transition"
+          <button
+            type="button"
+            onClick={() => openAuthPanel(user ? undefined : favCount > 0 || cartCount > 0 ? "register" : "login")}
+            className={`inline-flex items-center gap-2 rounded-xl px-2 sm:px-3 py-2 hover:bg-[var(--accent-strong)]/20 transition ${!user && (favCount > 0 || cartCount > 0) ? "bg-[var(--accent-strong)]/15" : ""}`}
             title="Профиль"
+            aria-haspopup="dialog"
           >
             <User size={20} />
-          </Link>
+          </button>
         </nav>
       </div>
 
@@ -179,137 +205,16 @@ export default function Header() {
         </div>
       )}
 
-      {menuOpen && (
-        <div className="fixed left-0 right-0 bottom-0 z-50 bg-[var(--background)]" style={{ top: headerHeight }}>
-          <div className="mx-auto max-w-3xl px-4 pt-6">
-            <div className="rounded-2xl border border-[var(--accent-strong)]/60 bg-[var(--panel-bg)] shadow-xl">
-              <div className="flex items-center justify-between p-3 border-b border-[var(--accent-strong)]/40">
-                <h2 className="text-base font-semibold">Меню</h2>
-                <button className="inline-flex items-center justify-center rounded-md p-2 hover:bg-[var(--accent-strong)]/20 transition" onClick={() => setMenuOpen(false)} aria-label="Закрыть">
-                  <X size={16} />
-                </button>
-              </div>
-              <div className="p-3">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <Link href="/#catalog" className="rounded-xl border border-[var(--accent-strong)]/60 px-4 py-3 hover:bg-[var(--accent-strong)]/10 transition">Каталог</Link>
-                  <Link href="/#about" className="rounded-xl border border-[var(--accent-strong)]/60 px-4 py-3 hover:bg-[var(--accent-strong)]/10 transition">О нас</Link>
-                  <Link href="/#contacts" className="rounded-xl border border-[var(--accent-strong)]/60 px-4 py-3 hover:bg-[var(--accent-strong)]/10 transition">Контакты</Link>
-                </div>
-                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {/* <button type="button" onClick={toggleTheme} className="rounded-xl border border-[var(--accent-strong)]/60 px-4 py-3 hover:bg-[var(--accent-strong)]/10 transition">
-                    {theme === "light" ? "Тёмная тема" : "Светлая тема"}
-                  </button> */}
-                  <div className="sm:col-span-2 flex items-center gap-2 justify-center sm:justify-start">
-                    <button type="button" onClick={() => applyLang("ru")} className={`rounded-xl border border-[var(--accent-strong)]/60 px-3 py-2 ${lang === "ru" ? "bg-[var(--accent-strong)]/15" : "hover:bg-[var(--accent-strong)]/10"}`}>RU</button>
-                    <button type="button" onClick={() => applyLang("en")} className={`rounded-xl border border-[var(--accent-strong)]/60 px-3 py-2 ${lang === "en" ? "bg-[var(--accent-strong)]/15" : "hover:bg-[var(--accent-strong)]/10"}`}>EN</button>
-                    <button type="button" onClick={() => applyLang("az")} className={`rounded-xl border border-[var(--accent-strong)]/60 px-3 py-2 ${lang === "az" ? "bg-[var(--accent-strong)]/15" : "hover:bg-[var(--accent-strong)]/10"}`}>AZ</button>
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center gap-2 justify-center">
-                  <Link href="https://instagram.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-xl p-2 hover:bg-[var(--accent-strong)]/20 transition" aria-label="Instagram"><Instagram size={20} /></Link>
-                  <Link href="https://tiktok.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-xl p-2 hover:bg-[var(--accent-strong)]/20 transition" aria-label="TikTok">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M17.5 6.5c1.1 1.1 2.4 1.8 3.9 2v3.1c-1.9-.1-3.7-.7-5.3-1.8v6.2c0 3.8-3.1 6.8-6.9 6.8-1.9 0-3.6-.8-4.9-2.1A6.86 6.86 0 0 1 2 16.1c0-3.8 3.1-6.8 6.9-6.8.3 0 .6 0 .9.1v3.5c-.3-.1-.6-.1-.9-.1-1.8 0-3.3 1.4-3.3 3.3s1.5 3.3 3.3 3.3 3.3-1.4 3.3-3.3V2h3.7c.3 1.7 1 3.1 1.6 4.5Z"/></svg>
-                  </Link>
-                  <Link href="https://facebook.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-xl p-2 hover:bg-[var(--accent-strong)]/20 transition" aria-label="Facebook"><Facebook size={20} /></Link>
-                </div>
-              </div>
-            </div>
-          </div>
-          <button className="absolute inset-0" onClick={() => setMenuOpen(false)} aria-hidden="true" />
-        </div>
-      )}
+      <MenuPanel open={menuOpen} onClose={closeMenu} topOffset={headerHeight} theme={theme} onToggleTheme={toggleTheme} lang={lang} onApplyLang={applyLang} />
 
-      {/* Favorites Modal */}
-      {favoritesOpen && (
-        <div className="fixed left-0 right-0 bottom-0 z-50 bg-[var(--background)]" style={{ top: headerHeight }}>
-          <div className="mx-auto max-w-3xl px-4 pt-6">
-            <div className="rounded-2xl border border-[var(--accent-strong)]/60 bg-[var(--panel-bg)] shadow-xl">
-              <div className="flex items-center justify-between p-3 border-b border-[var(--accent-strong)]/40">
-                <h2 className="text-base font-semibold">Избранное</h2>
-                <button className="inline-flex items-center justify-center rounded-md p-2 hover:bg-[var(--accent-strong)]/20 transition" onClick={closeFavorites} aria-label="Закрыть">
-                  <X size={16} />
-                </button>
-              </div>
-              <div className="p-3">
-                {Array.isArray(favorites) && favorites.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {products.filter((p) => favorites.includes(p.id)).map((p) => (
-                      <div key={p.id} className="flex items-center gap-3 rounded-xl border border-[var(--accent-strong)]/60 p-2 bg-[var(--background)]">
-                        <Image src={p.image} alt={p.title} width={72} height={72} className="h-18 w-18 rounded-lg object-cover" />
-                        <div className="flex-1">
-                          <div className="text-sm font-medium truncate">{p.title}</div>
-                          <div className="text-xs text-[var(--accent)]">{p.price} ₼</div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => toggleFavorite(p.id)} className="rounded-full p-2 border border-[var(--accent-strong)]/60 hover:bg-[var(--accent-strong)]/15 transition" aria-label="Убрать из избранного">
-                            <Heart size={16} />
-                          </button>
-                          <button onClick={() => addToCart(p.id)} className="rounded-xl bg-[var(--buy-button-bg)] text-[var(--foreground)] px-3 py-2 text-xs hover:opacity-90 transition">
-                            В корзину
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-[var(--accent)]">Список избранного пуст.</p>
-                )}
-              </div>
-            </div>
-          </div>
-          <button className="absolute inset-0" onClick={closeFavorites} aria-hidden="true" />
-        </div>
-      )}
-
-      {/* Cart Modal */}
-      {cartOpen && (
-        <div className="fixed left-0 right-0 bottom-0 z-50 bg-[var(--background)]" style={{ top: headerHeight }}>
-          <div className="mx-auto max-w-3xl px-4 pt-6">
-            <div className="rounded-2xl border border-[var(--accent-strong)]/60 bg-[var(--panel-bg)] shadow-xl">
-              <div className="flex items-center justify-between p-3 border-b border-[var(--accent-strong)]/40">
-                <h2 className="text-base font-semibold">Корзина</h2>
-                <button className="inline-flex items-center justify-center rounded-md p-2 hover:bg-[var(--accent-strong)]/20 transition" onClick={closeCart} aria-label="Закрыть">
-                  <X size={16} />
-                </button>
-              </div>
-              <div className="p-3">
-                {Object.keys(cart).length > 0 ? (
-                  <div className="space-y-3">
-                    {Object.entries(cart).map(([id, qty]) => {
-                      const product = products.find((p) => p.id === id);
-                      if (!product) return null;
-                      return (
-                        <div key={id} className="flex items-center gap-3 rounded-xl border border-[var(--accent-strong)]/60 p-2 bg-[var(--background)]">
-                          <Image src={product.image} alt={product.title} width={72} height={72} className="h-18 w-18 rounded-lg object-cover" />
-                          <div className="flex-1">
-                            <div className="text-sm font-medium truncate">{product.title}</div>
-                            <div className="text-xs text-[var(--accent)]">{product.price} ₼</div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => removeFromCart(id)} className="rounded-lg border border-[var(--accent-strong)]/60 px-2 py-1" aria-label="Убавить">−</button>
-                            <span className="w-8 text-center">{qty}</span>
-                            <button onClick={() => addToCart(id)} className="rounded-lg border border-[var(--accent-strong)]/60 px-2 py-1" aria-label="Добавить">+</button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    <div className="flex items-center justify-between border-t border-[var(--accent-strong)]/60 pt-3">
-                      <div className="text-sm font-semibold">Итого: {Object.entries(cart).reduce((sum, [id, qty]) => {
-                        const p = products.find((x) => x.id === id);
-                        return sum + (p ? p.price * qty : 0);
-                      }, 0)} ₼</div>
-                      <button className="rounded-xl bg-[var(--buy-button-bg)] text-[var(--foreground)] px-4 py-2 text-sm">Оформить заказ</button>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-[var(--accent)]">Корзина пуста.</p>
-                )}
-              </div>
-            </div>
-          </div>
-          <button className="absolute inset-0" onClick={closeCart} aria-hidden="true" />
-        </div>
-      )}
+      <ShopPanels
+        favoritesOpen={favoritesOpen}
+        cartOpen={cartOpen}
+        onCloseFavorites={closeFavorites}
+        onCloseCart={closeCart}
+        topOffset={headerHeight}
+      />
+      <AuthPanel topOffset={headerHeight} />
     </header>
   );
 }
