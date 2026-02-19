@@ -1,12 +1,9 @@
-export type Category =
-  | "flowers"
-  | "vases"
-  | "decorations"
-  | "corporate"
-  | "newyear"
-  | "gifts"
-  | "sets"
-  | "bouquets";
+export type Category = {
+  id: string;
+  name: string;
+  slug: string;
+  image?: string | null;
+};
 
 export type Recipient =
   | "wife"
@@ -24,17 +21,24 @@ export type Occasion =
 
 export type Product = {
   id: string;
-  title: string;
-  description: string;
+  name: string;
+  slug: string;
+  description: string | null;
   price: number;
-  image: string;
+  oldPrice?: number | null;
+  images: string[];
+  categoryId: string;
   category: Category;
-  recipients?: Recipient[];
-  occasions?: Occasion[];
+  isPopular: boolean;
+  inStock: boolean;
+  recipients?: string[];
+  occasions?: string[];
 };
 
 export type User = {
   id: string;
   name: string;
   email: string;
+  role?: string;
+  phone?: string | null;
 };

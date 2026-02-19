@@ -2,6 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { Raleway } from "next/font/google";
 import "./globals.css";
 import Footer from "../components/Footer";
+import Header from "../components/Header";
+
+import Providers from "../components/Providers";
+import SessionSync from "../components/SessionSync";
 
 const raleway = Raleway({
   variable: "--font-raleway",
@@ -31,7 +35,11 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{
           __html: `(() => { try { const t = localStorage.getItem('allium-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch(_){} })();`
         }} />
-        {children}
+        <Providers>
+          <SessionSync />
+          <Header />
+          {children}
+        </Providers>
         <div id="contacts">
           <Footer />
         </div>

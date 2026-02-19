@@ -3,6 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { X, User as UserIcon } from "lucide-react";
 import { useShopStore } from "../store/useShopStore";
+import { signIn, signOut } from "next-auth/react";
+import { register as registerAction } from "@/app/actions/auth";
+import { toast } from "sonner";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type Point = { x: number; y: number };
 
@@ -11,7 +16,8 @@ function clamp(value: number, min: number, max: number) {
 }
 
 export default function AuthPanel({ topOffset }: { topOffset: number }) {
-  const { authPanelOpen, authPanelTab, setAuthPanelTab, closeAuthPanel, login, register, logout, user } = useShopStore();
+  const { authPanelOpen, authPanelTab, setAuthPanelTab, closeAuthPanel, user } = useShopStore();
+  const router = useRouter();
 
   const panelRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<Point | null>(null);
@@ -29,6 +35,7 @@ export default function AuthPanel({ topOffset }: { topOffset: number }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!authPanelOpen) return;
@@ -115,14 +122,66 @@ export default function AuthPanel({ topOffset }: { topOffset: number }) {
     };
   };
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
+    
     const cleanEmail = email.trim();
-    if (!cleanEmail) return;
-    if (authPanelTab === "login") login(cleanEmail);
-    else register(name.trim() || "Гость", cleanEmail);
-    setPassword("");
-    closeAuthPanel();
+    if (!cleanEmail) {
+      toast.error("Введите email");
+      return;
+    }
+    if (!password) {
+      toast.error("Введите пароль");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      if (authPanelTab === "login") {
+        const result = await signIn("credentials", {
+          redirect: false,
+          email: cleanEmail,
+          password,
+        });
+
+        if (result?.error) {
+          toast.error("Ошибка входа: Неверный email или пароль");
+        } else {
+          toast.success("Вы успешно вошли!");
+          setPassword("");
+          closeAuthPanel();
+          router.refresh();
+        }
+      } else {
+        const formData = new FormData();
+        formData.append("name", name.trim() || "Гость");
+        formData.append("email", cleanEmail);
+        formData.append("password", password);
+
+        const result = await registerAction(undefined, formData);
+        
+        if (result === "success") {
+          toast.success("Регистрация успешна! Теперь войдите.");
+          setAuthPanelTab("login");
+        } else {
+          toast.error(result || "Ошибка регистрации");
+        }
+      }
+    } catch (error) {
+      toast.error("Произошла ошибка");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+      await signOut({ redirect: false });
+      toast.info("Вы вышли из системы");
+      closeAuthPanel();
+      router.refresh();
   };
 
   const style = {
@@ -160,8 +219,24 @@ export default function AuthPanel({ topOffset }: { topOffset: number }) {
             <div className="rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--background)] p-3">
               <div className="text-sm font-medium truncate">{user.name}</div>
               <div className="text-xs text-[var(--accent)] truncate">{user.email}</div>
+              {user.role === 'ADMIN' && (
+                  <div className="mt-2 pt-2 border-t border-[var(--accent-strong)]/20">
+                      <Link href="/admin/products" className="text-xs font-bold text-[var(--accent)] hover:underline block" onClick={closeAuthPanel}>
+                          Панель администратора
+                      </Link>
+                  </div>
+              )}
             </div>
-            <button type="button" onClick={logout} className="w-full rounded-xl border border-[var(--accent-strong)]/60 px-4 py-2 text-sm hover:bg-[var(--accent-strong)]/10 transition">
+            
+            <Link 
+                href="/profile" 
+                className="block w-full text-center rounded-xl border border-[var(--accent-strong)]/60 px-4 py-2 text-sm hover:bg-[var(--accent-strong)]/10 transition"
+                onClick={closeAuthPanel}
+            >
+                Перейти в профиль
+            </Link>
+
+            <button type="button" onClick={handleLogout} className="w-full rounded-xl border border-[var(--accent-strong)]/60 px-4 py-2 text-sm hover:bg-[var(--accent-strong)]/10 transition text-red-500 hover:text-red-600">
               Выйти
             </button>
           </div>
@@ -198,7 +273,7 @@ export default function AuthPanel({ topOffset }: { topOffset: number }) {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--background)] text-[var(--foreground)] h-10 px-3 text-sm outline-none"
-                    type="text"
+                    placeholder="Ваше имя"
                     required
                   />
                 </div>
@@ -206,25 +281,33 @@ export default function AuthPanel({ topOffset }: { topOffset: number }) {
               <div>
                 <label className="block text-sm mb-1">Email</label>
                 <input
+                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--background)] text-[var(--foreground)] h-10 px-3 text-sm outline-none"
-                  type="email"
+                  placeholder="name@example.com"
                   required
                 />
               </div>
               <div>
                 <label className="block text-sm mb-1">Пароль</label>
                 <input
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--background)] text-[var(--foreground)] h-10 px-3 text-sm outline-none"
-                  type="password"
+                  placeholder="******"
                   required
+                  minLength={6}
                 />
               </div>
-              <button type="submit" className="w-full rounded-xl bg-[var(--buy-button-bg)] text-[var(--foreground)] px-4 py-2 text-sm">
-                {authPanelTab === "login" ? "Войти" : "Зарегистрироваться"}
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full rounded-xl bg-[var(--accent)] text-white font-medium h-10 hover:opacity-90 transition disabled:opacity-50"
+              >
+                {isLoading ? "Загрузка..." : authPanelTab === "login" ? "Войти" : "Зарегистрироваться"}
               </button>
             </form>
           </>

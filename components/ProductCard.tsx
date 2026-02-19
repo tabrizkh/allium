@@ -22,7 +22,7 @@ export default function ProductCard({ product }: { product: Product }) {
         className="group rounded-2xl bg-[var(--background)] overflow-hidden shadow-sm hover:shadow-lg transition break-inside-avoid mb-6 relative cursor-pointer"
         role="button"
         tabIndex={0}
-        aria-label={`Открыть товар: ${product.title}`}
+        aria-label={`Открыть товар: ${product.name}`}
         onClick={(e) => {
           const target = e.target as HTMLElement | null;
           if (!target) return;
@@ -36,8 +36,8 @@ export default function ProductCard({ product }: { product: Product }) {
       >
       <div className="relative">
         <Image
-          src={imgFailed ? fallbackSrc : product.image}
-          alt={product.title}
+          src={imgFailed ? fallbackSrc : (product.images[0] || fallbackSrc)}
+          alt={product.name}
           width={600}
           height={800}
           className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-105"
@@ -55,7 +55,7 @@ export default function ProductCard({ product }: { product: Product }) {
       </div>
       <div className="p-3">
         <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
-          <h3 className="flex-1 text-sm truncate">{product.title}</h3>
+          <h3 className="flex-1 text-sm truncate">{product.name}</h3>
           <span className="text-base font-semibold shrink-0">{product.price} ₼</span>
           <button
             onClick={() => { addToCart(product.id); router.push("/cart"); }}

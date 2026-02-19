@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Image from "next/image";
 import { Heart, ShoppingBag, ShoppingCart, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -209,9 +210,9 @@ export default function ShopPanels({ favoritesOpen, cartOpen, onCloseFavorites, 
                   .filter((p) => favoritesList.includes(p.id))
                   .map((p) => (
                     <div key={p.id} className="flex items-center gap-3 rounded-xl border border-[var(--accent-strong)]/60 p-2 bg-[var(--background)]">
-                      <Image src={p.image} alt={p.title} width={72} height={72} className="h-18 w-18 rounded-lg object-cover" />
+                      <Image src={p.images[0]} alt={p.name} width={72} height={72} className="h-18 w-18 rounded-lg object-cover" />
                       <div className="flex-1">
-                        <div className="text-sm font-medium truncate">{p.title}</div>
+                        <div className="text-sm font-medium truncate">{p.name}</div>
                         <div className="text-xs text-[var(--accent)]">{p.price} ₼</div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -276,9 +277,9 @@ export default function ShopPanels({ favoritesOpen, cartOpen, onCloseFavorites, 
                   if (!product) return null;
                   return (
                     <div key={id} className="flex items-center gap-3 rounded-xl border border-[var(--accent-strong)]/60 p-2 bg-[var(--background)]">
-                      <Image src={product.image} alt={product.title} width={72} height={72} className="h-18 w-18 rounded-lg object-cover" />
+                      <Image src={product.images[0]} alt={product.name} width={72} height={72} className="h-18 w-18 rounded-lg object-cover" />
                       <div className="flex-1">
-                        <div className="text-sm font-medium truncate">{product.title}</div>
+                        <div className="text-sm font-medium truncate">{product.name}</div>
                         <div className="text-xs text-[var(--accent)]">{product.price} ₼</div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -302,7 +303,13 @@ export default function ShopPanels({ favoritesOpen, cartOpen, onCloseFavorites, 
                     }, 0)}{" "}
                     ₼
                   </div>
-                  <button className="rounded-xl bg-[var(--buy-button-bg)] text-[var(--foreground)] px-4 py-2 text-sm">Оформить заказ</button>
+                  <Link 
+                    href="/checkout" 
+                    onClick={onCloseCart}
+                    className="rounded-xl bg-[var(--buy-button-bg)] text-[var(--foreground)] px-4 py-2 text-sm hover:opacity-90 transition"
+                  >
+                    Оформить заказ
+                  </Link>
                 </div>
               </div>
             ) : (

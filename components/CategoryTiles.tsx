@@ -13,7 +13,7 @@ type StoryItem = {
 };
 
 type Tile = {
-  category: Category;
+  slug: string;
   title: string;
   image: string;
   stories: StoryItem[];
@@ -21,7 +21,7 @@ type Tile = {
 
 const tiles: Tile[] = [
   {
-    category: "bouquets",
+    slug: "bouquets",
     title: "Букеты",
     image: "/bukets.webp",
     stories: [
@@ -31,7 +31,7 @@ const tiles: Tile[] = [
     ],
   },
   {
-    category: "gifts",
+    slug: "gifts",
     title: "Подарки",
     image: "/podarok.webp",
     stories: [
@@ -41,7 +41,7 @@ const tiles: Tile[] = [
     ],
   },
   {
-    category: "decorations",
+    slug: "decorations",
     title: "Декор",
     image: "/dekor.jpg",
     stories: [
@@ -51,7 +51,7 @@ const tiles: Tile[] = [
     ],
   },
   {
-    category: "vases",
+    slug: "vases",
     title: "Вазы",
     image: "/vase.webp",
     stories: [
@@ -61,7 +61,7 @@ const tiles: Tile[] = [
     ],
   },
   {
-    category: "flowers",
+    slug: "flowers",
     title: "Цветы",
     image: "/6.webp",
     stories: [
@@ -71,7 +71,7 @@ const tiles: Tile[] = [
     ],
   },
   {
-    category: "sets",
+    slug: "sets",
     title: "Сеты",
     image: "/sets.jpg",
     stories: [
@@ -84,8 +84,8 @@ const tiles: Tile[] = [
 
 export default function CategoryTiles() {
   const STORY_MS = 4800;
-  const { toggleCategory, clearCategories } = useShopStore();
-  const [openCategory, setOpenCategory] = useState<Category | null>(null);
+  const { categories: allCategories, toggleCategory, clearCategories } = useShopStore();
+  const [openSlug, setOpenSlug] = useState<string | null>(null);
   const [storyIndex, setStoryIndex] = useState(0);
   const [storyProgress, setStoryProgress] = useState(0);
   const storyStartRef = useRef<number>(0);
@@ -97,18 +97,18 @@ export default function CategoryTiles() {
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const openStories = useCallback((c: Category) => {
-    setOpenCategory(c);
+  const openStories = useCallback((slug: string) => {
+    setOpenSlug(slug);
     setStoryIndex(0);
     setStoryProgress(0);
   }, []);
 
   const closeStories = useCallback(() => {
-    setOpenCategory(null);
+    setOpenSlug(null);
     setStoryProgress(0);
   }, []);
 
-  const activeTile = useMemo(() => tiles.find((t) => t.category === openCategory) || null, [openCategory]);
+  const activeTile = useMemo(() => tiles.find((t) => t.slug === openSlug) || null, [openSlug]);
   const activeStory = activeTile?.stories?.[storyIndex] || null;
 
   const goPrev = useCallback(() => {
@@ -129,7 +129,7 @@ export default function CategoryTiles() {
   }, [activeTile, closeStories]);
 
   useEffect(() => {
-    if (!openCategory) return;
+    if (!openSlug) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeStories();
       if (e.key === "ArrowLeft") goPrev();
@@ -137,10 +137,10 @@ export default function CategoryTiles() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [openCategory, closeStories, goNext, goPrev]);
+  }, [openSlug, closeStories, goNext, goPrev]);
 
   useEffect(() => {
-    if (!openCategory) return;
+    if (!openSlug) return;
     if (!activeTile) return;
     storyStartRef.current = performance.now();
 
@@ -163,14 +163,17 @@ export default function CategoryTiles() {
       if (rafRef.current) window.cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     };
-  }, [STORY_MS, activeTile, goNext, openCategory, storyIndex]);
+  }, [STORY_MS, activeTile, goNext, openSlug, storyIndex]);
 
-  const goToCategory = useCallback((c: Category) => {
-    clearCategories();
-    toggleCategory(c);
-    closeStories();
-    goToCatalog();
-  }, [clearCategories, closeStories, toggleCategory]);
+  const goToCategory = useCallback((slug: string) => {
+    const cat = allCategories.find(c => c.slug === slug);
+    if (cat) {
+      clearCategories();
+      toggleCategory(cat);
+      closeStories();
+      goToCatalog();
+    }
+  }, [allCategories, clearCategories, closeStories, toggleCategory]);
 
   return (
     <>
@@ -178,8 +181,8 @@ export default function CategoryTiles() {
         <div className="flex justify-center overflow-x-auto no-scrollbar gap-2 sm:grid sm:grid-cols-6 sm:gap-3 sm:overflow-visible">
           {tiles.map((t) => (
             <button
-              key={t.category}
-              onClick={() => openStories(t.category)}
+              key={t.slug}
+              onClick={() => openStories(t.slug)}
               className="group flex flex-col items-center gap-2 cursor-pointer shrink-0"
               aria-label={t.title}
             >
@@ -194,7 +197,7 @@ export default function CategoryTiles() {
         </div>
       </section>
 
-      {openCategory && activeTile && (
+      {openSlug && activeTile && (
         <div className="fixed inset-0 z-50">
           <button className="absolute inset-0 bg-black/55" onClick={closeStories} aria-label="Закрыть истории" />
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] sm:w-[420px] max-w-[calc(100vw-24px)] з-4">
@@ -266,7 +269,7 @@ export default function CategoryTiles() {
                 <div className="absolute left-0 right-0 bottom-0 p-4">
                   <button
                     type="button"
-                    onClick={() => goToCategory(activeTile.category)}
+                    onClick={() => goToCategory(activeTile.slug)}
                     className="w-full rounded-2xl bg-[var(--buy-button-bg)] text-[var(--foreground)] px-4 py-3 text-sm font-semibold hover:opacity-90 transition"
                   >
                     Перейти к {activeTile.title.toLowerCase()}

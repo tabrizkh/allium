@@ -1,9 +1,9 @@
 "use client";
 import { useShopStore } from "../store/useShopStore";
 import type { Category, Recipient } from "../lib/types";
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 
-const baseCategories: Category[] = [
+const orderedSlugs = [
   "flowers",
   "vases",
   "decorations",
@@ -12,21 +12,11 @@ const baseCategories: Category[] = [
   "bouquets",
 ];
 
-const categoryLabels: Record<Category, string> = {
-  flowers: "Цветы",
-  vases: "Вазы",
-  decorations: "Декорации",
-  corporate: "Корпоративные",
-  newyear: "Новый год",
-  gifts: "Подарки",
-  sets: "Сеты",
-  bouquets: "Букеты",
-};
-
 const familyRecipients: Recipient[] = ["wife", "mom", "children"];
 
 export default function Categories() {
   const {
+    categories: allCategories,
     selectedCategories,
     toggleCategory,
     clearCategories,
@@ -34,7 +24,20 @@ export default function Categories() {
     toggleRecipient,
   } = useShopStore();
 
-  const [openKey, setOpenKey] = useState<null | "decorations" | "gifts">(null);
+  const displayCategories = useMemo(() => {
+    // Return all categories, but sort them to put orderedSlugs first?
+    // Or just use orderedSlugs to filter?
+    // Let's try to map orderedSlugs to categories first.
+    const ordered = orderedSlugs
+      .map((slug) => allCategories.find((c) => c.slug === slug))
+      .filter((c): c is Category => !!c);
+    
+    // If there are other categories not in orderedSlugs, maybe append them?
+    const others = allCategories.filter(c => !orderedSlugs.includes(c.slug));
+    return [...ordered, ...others];
+  }, [allCategories]);
+
+  const [openKey, setOpenKey] = useState<null | string>(null);
   const closeTimer = useRef<number | null>(null);
 
   const cancelClose = () => {
@@ -49,8 +52,7 @@ export default function Categories() {
     closeTimer.current = window.setTimeout(() => setOpenKey(null), 150);
   };
 
-  const isCatActive = (c: Category) => Array.isArray(selectedCategories) && selectedCategories.includes(c);
-  const isSubActive = (c: Category) => isCatActive(c);
+  const isCatActive = (c: Category) => Array.isArray(selectedCategories) && selectedCategories.some(sc => sc.id === c.id);
   const isFamilyActive = familyRecipients.some((r) => selectedRecipients.includes(r));
   const isFriendsActive = selectedRecipients.includes("friend");
 
@@ -64,27 +66,17 @@ export default function Categories() {
 
   return (
     <section className="mx-auto max-w-6xl px-4 mt-6">
-      {/* <div className="flex justify-end items-center mb-3">
-    
-        <button
-          className="text-sm text-zinc-600 hover:text-zinc-900"
-          onClick={() => clearCategories()}
-        >
-          Сбросить
-        </button>
-      </div> */}
-
       <div className="grid grid-cols-2 gap-2 sm:flex sm:items-stretch sm:gap-2 sm:justify-between">
-        {baseCategories.map((c) => {
+        {displayCategories.map((c) => {
           const active = isCatActive(c);
-          const hasDropdown = c === "decorations" || c === "gifts";
+          const hasDropdown = c.slug === "decorations" || c.slug === "gifts";
           return (
             <div
-              key={c}
+              key={c.id}
               className="relative group flex-1 min-w-[120px]"
               onMouseEnter={() => {
                 cancelClose();
-                setOpenKey(hasDropdown ? (c as "decorations" | "gifts") : null);
+                setOpenKey(hasDropdown ? c.slug : null);
               }}
               onMouseLeave={() => {
                 if (hasDropdown) scheduleClose();
@@ -96,51 +88,57 @@ export default function Categories() {
                   toggleCategory(c);
                 }}
                 aria-haspopup={hasDropdown ? "menu" : undefined}
-                aria-expanded={hasDropdown ? openKey === c : undefined}
+                aria-expanded={hasDropdown ? openKey === c.slug : undefined}
                 className={`w-full text-center rounded-xl border px-3 py-2 text-sm transition ${
                   active
-                    ? "border-[var(--accent-strong)]/60 bg-[var(--background)]/20 text-[var(--foreground)] shadow-sm"
-                    : "border-[var(--accent-strong)]/60  bg-[var(--background)] hover:bg-[var(--accent-strong)]/15"
+                    ? "border-[var(--accent-strong)] bg-[var(--accent-strong)]/10 text-[var(--foreground)] font-semibold shadow-inner"
+                    : "border-[var(--accent-strong)]/60 bg-[var(--background)] text-[var(--foreground)] hover:border-[var(--accent-strong)] hover:bg-[var(--accent-strong)]/5"
                 }`}
               >
-                {categoryLabels[c]}
+                {c.name}
               </button>
 
-              {hasDropdown && openKey === c && (
+              {hasDropdown && openKey === c.slug && (
                 <div
                   className="absolute left-0 top-full mt-2 z-30 w-56 rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--buy-button-bg)] shadow-lg p-2"
                   onMouseEnter={cancelClose}
                   onMouseLeave={scheduleClose}
                 >
-                  {c === "decorations" && (
+                  {c.slug === "decorations" && (
                     <div>
-                      <button
-                        onClick={() => {
-                          clearCategories();
-                          toggleCategory("corporate");
-                        }}
-                        className={`flex w-full items-center justify-between rounded-sm px-2 py-2 text-sm transition ${
-                          isSubActive("corporate") ? "bg-[var(--accent-strong)]/20 text-[var(--foreground)]" : "hover:bg-[var(--accent-strong)]/15"
-                        }`}
-                      >
-                        <span>{categoryLabels["corporate"]}</span>
-                        {isSubActive("corporate") && <span>✓</span>}
-                      </button>
-                      <button
-                        onClick={() => {
-                          clearCategories();
-                          toggleCategory("newyear");
-                        }}
-                        className={`mt-1 flex w-full items-center justify-between rounded-sm px-2 py-2 text-sm transition ${
-                          isSubActive("newyear") ? "bg-[var(--accent-strong)]/20 text-[var(--foreground)]" : "hover:bg-[var(--accent-strong)]/15"
-                        }`}
-                      >
-                        <span>{categoryLabels["newyear"]}</span>
-                        {isSubActive("newyear") && <span>✓</span>}
-                      </button>
+                      {allCategories.find(x => x.slug === "corporate") && (
+                        <button
+                          onClick={() => {
+                            clearCategories();
+                            const cat = allCategories.find(x => x.slug === "corporate");
+                            if (cat) toggleCategory(cat);
+                          }}
+                          className={`flex w-full items-center justify-between rounded-sm px-2 py-2 text-sm transition ${
+                            isCatActive(allCategories.find(x => x.slug === "corporate")!) ? "bg-[var(--accent-strong)]/20 text-[var(--foreground)]" : "hover:bg-[var(--accent-strong)]/15"
+                          }`}
+                        >
+                          <span>Корпоративные</span>
+                          {isCatActive(allCategories.find(x => x.slug === "corporate")!) && <span>✓</span>}
+                        </button>
+                      )}
+                      {allCategories.find(x => x.slug === "newyear") && (
+                        <button
+                          onClick={() => {
+                            clearCategories();
+                            const cat = allCategories.find(x => x.slug === "newyear");
+                            if (cat) toggleCategory(cat);
+                          }}
+                          className={`mt-1 flex w-full items-center justify-between rounded-sm px-2 py-2 text-sm transition ${
+                            isCatActive(allCategories.find(x => x.slug === "newyear")!) ? "bg-[var(--accent-strong)]/20 text-[var(--foreground)]" : "hover:bg-[var(--accent-strong)]/15"
+                          }`}
+                        >
+                          <span>Новый год</span>
+                          {isCatActive(allCategories.find(x => x.slug === "newyear")!) && <span>✓</span>}
+                        </button>
+                      )}
                     </div>
                   )}
-                  {c === "gifts" && (
+                  {c.slug === "gifts" && (
                     <div>
                       <button
                         onClick={toggleFamilyGroup}

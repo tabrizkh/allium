@@ -23,7 +23,7 @@ const tiles: Tile[] = [
 ];
 
 export default function HeroMosaic() {
-  const { setPriceRange, minPrice, maxPrice, toggleCategory } = useShopStore();
+  const { setPriceRange, minPrice, maxPrice, toggleCategory, categories } = useShopStore();
 
   const goToCatalog = () => {
     const el = document.querySelector("#catalog");
@@ -37,7 +37,10 @@ export default function HeroMosaic() {
       const ceil = Math.min(maxPrice, b);
       setPriceRange([floor, ceil]);
     } else {
-      toggleCategory(t.action.value as Category);
+      const category = categories.find((c) => c.slug === t.action.value);
+      if (category) {
+        toggleCategory(category);
+      }
     }
     goToCatalog();
   };

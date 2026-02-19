@@ -26,15 +26,16 @@ export default function CartPage() {
                 key={product.id}
                 className="flex items-center gap-4 rounded-xl border border-[var(--accent-strong)]/60 p-3 bg-[var(--background)]"
               >
-                <Image
-                  src={product.image}
-                  alt={product.title}
-                  width={80}
-                  height={100}
-                  className="rounded-lg object-cover h-20 w-16"
-                />
-                <div className="flex-1">
-                  <div className="font-medium">{product.title}</div>
+                <div className="relative w-20 h-20 bg-[var(--panel-bg)] rounded-lg overflow-hidden flex-shrink-0">
+                  <Image
+                    src={product.images[0]}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium">{product.name}</div>
                   <div className="text-sm text-[var(--accent)]">{product.price} ₼</div>
                 </div>
                 <div className="flex items-center gap-2">

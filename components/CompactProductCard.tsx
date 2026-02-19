@@ -22,7 +22,7 @@ export default function CompactProductCard({ product }: { product: Product }) {
         className="group w-56 sm:w-64 flex-none rounded-2xl bg-[var(--background)] overflow-hidden shadow-sm hover:shadow-lg transition cursor-pointer"
         role="button"
         tabIndex={0}
-        aria-label={`Открыть товар: ${product.title}`}
+        aria-label={`Открыть товар: ${product.name}`}
         onClick={(e) => {
           const target = e.target as HTMLElement | null;
           if (!target) return;
@@ -36,8 +36,8 @@ export default function CompactProductCard({ product }: { product: Product }) {
       >
         <div className="relative">
           <Image
-            src={imgFailed ? fallbackSrc : product.image}
-            alt={product.title}
+            src={imgFailed ? fallbackSrc : (product.images[0] || fallbackSrc)}
+            alt={product.name}
             width={400}
             height={300}
             className="w-full h-40 sm:h-48 object-cover transition-transform duration-500 group-hover:scale-105"
@@ -55,7 +55,7 @@ export default function CompactProductCard({ product }: { product: Product }) {
         </div>
         <div className="px-4 py-3">
           <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-            <div className="flex-1 text-xs truncate">{product.title}</div>
+            <div className="flex-1 text-xs truncate">{product.name}</div>
             <span className="text-sm font-semibold shrink-0">{product.price} ₼</span>
             <button
               onClick={() => {

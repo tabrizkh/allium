@@ -1,24 +1,8 @@
 "use client";
 import { ChevronDown, Check, RotateCcw } from "lucide-react";
 import { useShopStore } from "../store/useShopStore";
-import type { Recipient, Occasion } from "../lib/types";
 import { useRef, useEffect, useState } from "react";
-
-const recipientLabels: Record<Recipient, string> = {
-  wife: "Жене",
-  mom: "Маме",
-  children: "Детям",
-  colleague: "Коллеге",
-  friend: "Друзьям",
-};
-
-const occasionLabels: Record<Occasion, string> = {
-  wedding: "Свадьба",
-  nishan: "Нишан",
-  gift: "Подарок",
-  holiday: "Праздник",
-  birthday: "День рождения",
-};
+import { recipientLabels, occasionLabels, recipients as recs, occasions as occs } from "../lib/constants";
 
 export default function Filters() {
   const {
@@ -35,9 +19,6 @@ export default function Filters() {
     setPriceRange,
     resetPriceRange,
   } = useShopStore();
-
-  const recs = Object.keys(recipientLabels) as Recipient[];
-  const occs = Object.keys(occasionLabels) as Occasion[];
 
   // локальное состояние открытия дропдаунов
   const [openRecipients, setOpenRecipients] = useState(false);
