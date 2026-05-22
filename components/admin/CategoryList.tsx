@@ -22,6 +22,8 @@ type Attribute = {
 type Packaging = {
   id: string;
   name: string;
+  name_en?: string | null;
+  name_az?: string | null;
   price: number;
   image: string | null;
   isAvailable: boolean;
@@ -30,6 +32,8 @@ type Packaging = {
 type Category = {
   id: string;
   name: string;
+  name_en?: string | null;
+  name_az?: string | null;
   slug: string;
   image: string | null;
   attributes: Attribute[];
@@ -55,7 +59,7 @@ function LanguageTabs({ activeLang, onChange }: { activeLang: string; onChange: 
   );
 }
 
-export default function CategoryList({ categories }: { categories: any[] }) {
+export default function CategoryList({ categories }: { categories: Category[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAttributesModalOpen, setIsAttributesModalOpen] = useState(false);
   const [isPackagingModalOpen, setIsPackagingModalOpen] = useState(false);
@@ -188,7 +192,7 @@ export default function CategoryList({ categories }: { categories: any[] }) {
   );
 }
 
-function PackagingModal({ category, onClose }: { category: any; onClose: () => void }) {
+function PackagingModal({ category, onClose }: { category: Category; onClose: () => void }) {
   const [isAdding, setIsAdding] = useState(false);
   const [activeLang, setActiveLang] = useState("ru");
   const [newImage, setNewImage] = useState("");
@@ -411,7 +415,7 @@ function AttributesModal({ category, onClose }: { category: Category; onClose: (
 
 
 
-function CategoryModal({ category, onClose }: { category: any | null; onClose: () => void }) {
+function CategoryModal({ category, onClose }: { category: Category | null; onClose: () => void }) {
   const isEditing = !!category;
   const [activeLang, setActiveLang] = useState("ru");
   const [imageUrl, setImageUrl] = useState(category?.image || "");

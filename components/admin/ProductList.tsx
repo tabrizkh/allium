@@ -16,12 +16,17 @@ type Category = {
 type Product = {
   id: string;
   name: string;
+  name_en?: string | null;
+  name_az?: string | null;
   slug: string;
   price: number; // Actually Decimal, but handled as number in JS
   oldPrice: number | null;
   categoryId: string;
+  category: Category;
   images: string;
   description: string | null;
+  description_en?: string | null;
+  description_az?: string | null;
   isPopular: boolean;
   isTrending: boolean;
   inStock: boolean;
@@ -33,11 +38,15 @@ type Product = {
 type AttributeOption = {
   id: string;
   name: string;
+  name_en?: string | null;
+  name_az?: string | null;
 };
 
 type Attribute = {
   id: string;
   name: string;
+  name_en?: string | null;
+  name_az?: string | null;
   options: AttributeOption[];
 };
 
@@ -45,7 +54,7 @@ type ExtendedCategory = Category & {
   attributes: Attribute[];
 };
 
-export default function ProductList({ products, categories }: { products: any[], categories: ExtendedCategory[] }) {
+export default function ProductList({ products, categories }: { products: Product[], categories: ExtendedCategory[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
@@ -54,7 +63,7 @@ export default function ProductList({ products, categories }: { products: any[],
     setIsModalOpen(true);
   };
 
-  const openEditModal = (product: any) => {
+  const openEditModal = (product: Product) => {
     setEditingProduct({
         ...product,
         price: Number(product.price),
@@ -191,7 +200,7 @@ function LanguageTabs({ activeLang, onChange }: { activeLang: string; onChange: 
   );
 }
 
-function ProductModal({ product, categories, onClose }: { product: any | null; categories: ExtendedCategory[]; onClose: () => void }) {
+function ProductModal({ product, categories, onClose }: { product: Product | null; categories: ExtendedCategory[]; onClose: () => void }) {
   const isEditing = !!product;
   const [activeLang, setActiveLang] = useState("ru");
   

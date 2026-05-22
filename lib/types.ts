@@ -44,6 +44,17 @@ export type CategoryAttribute = {
   }[];
 };
 
+export type Packaging = {
+  id: string;
+  name: string;
+  name_en?: string | null;
+  name_az?: string | null;
+  price: number;
+  image: string | null;
+  isAvailable: boolean;
+  categoryId: string;
+};
+
 export type Category = {
   id: string;
   name: string;
@@ -53,6 +64,7 @@ export type Category = {
   image: string | null;
   stories: Story[];
   attributes?: CategoryAttribute[];
+  packaging?: Packaging[];
 };
 
 export type Recipient =

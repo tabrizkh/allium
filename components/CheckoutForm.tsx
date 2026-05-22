@@ -541,7 +541,21 @@ export default function CheckoutForm({ packaging = [], cardTemplates = [] }: { p
   );
 }
 
-function CheckoutPackagingPopup({ item, packaging, products, onClose, onSelect, currentSelection }: any) {
+function CheckoutPackagingPopup({ 
+  item, 
+  packaging, 
+  products, 
+  onClose, 
+  onSelect, 
+  currentSelection 
+}: { 
+  item: any; 
+  packaging: any[]; 
+  products: any[]; 
+  onClose: () => void; 
+  onSelect: (selection: any) => void; 
+  currentSelection: any;
+}) {
   const [tempSelection, setTempSelection] = useState<any>({});
   const { t } = useTranslation();
 
