@@ -13,6 +13,8 @@ import Link from "next/link";
 type Packaging = {
   id: string;
   name: string;
+  name_en?: string | null;
+  name_az?: string | null;
   price: number;
   image: string | null;
   isAvailable: boolean;
@@ -22,6 +24,8 @@ type Packaging = {
 type CardTemplate = {
   id: string;
   text: string;
+  text_en?: string | null;
+  text_az?: string | null;
   recipient: string;
 };
 

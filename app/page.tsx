@@ -118,7 +118,11 @@ export default async function Home() {
     stories: c.stories.map((s) => ({
       id: s.id,
       title: s.title,
+      title_en: s.title_en,
+      title_az: s.title_az,
       description: s.description,
+      description_en: s.description_en,
+      description_az: s.description_az,
       mediaUrl: s.mediaUrl,
       type: s.type as "image" | "video",
       isActive: s.isActive,

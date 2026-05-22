@@ -1,7 +1,11 @@
 export type Story = {
   id: string;
   title: string | null;
+  title_en?: string | null;
+  title_az?: string | null;
   description: string | null;
+  description_en?: string | null;
+  description_az?: string | null;
   mediaUrl: string;
   type: "image" | "video";
   isActive: boolean;
@@ -11,10 +15,18 @@ export type Story = {
 export type SliderItem = {
   id: string;
   title: string;
+  title_en?: string | null;
+  title_az?: string | null;
   subtitle: string | null;
+  subtitle_en?: string | null;
+  subtitle_az?: string | null;
   description: string | null;
+  description_en?: string | null;
+  description_az?: string | null;
   imageUrl: string;
   buttonText: string;
+  buttonText_en?: string | null;
+  buttonText_az?: string | null;
   buttonLink: string;
   isActive: boolean;
 };
@@ -22,15 +34,21 @@ export type SliderItem = {
 export type CategoryAttribute = {
   id: string;
   name: string;
+  name_en?: string | null;
+  name_az?: string | null;
   options: {
     id: string;
     name: string;
+    name_en?: string | null;
+    name_az?: string | null;
   }[];
 };
 
 export type Category = {
   id: string;
   name: string;
+  name_en?: string | null;
+  name_az?: string | null;
   slug: string;
   image: string | null;
   stories: Story[];
@@ -54,8 +72,12 @@ export type Occasion =
 export type Product = {
   id: string;
   name: string;
+  name_en?: string | null;
+  name_az?: string | null;
   slug: string;
   description: string | null;
+  description_en?: string | null;
+  description_az?: string | null;
   price: number;
   oldPrice?: number | null;
   images: string[];
