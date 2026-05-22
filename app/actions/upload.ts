@@ -22,19 +22,18 @@ export async function uploadFile(formData: FormData) {
       Key: `uploads/${finalFilename}`,
       Body: buffer,
       ContentType: file.type,
-      // ACL: "public-read", // Removed for compatibility with buckets where ACLs are disabled
+      ACL: "public-read", // Re-enabled because user enabled ACLs in S3 settings
     });
 
     await s3Client.send(command);
 
     // Construct the public URL
-    // Format: https://BUCKET_NAME.s3.REGION.amazonaws.com/uploads/FILENAME
     const region = process.env.AWS_REGION || "us-east-1";
     const url = `https://${bucketName}.s3.${region}.amazonaws.com/uploads/${finalFilename}`;
 
     return { url };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error uploading to S3:", error);
-    return { error: "Error uploading to S3" };
+    return { error: `S3 Upload Error: ${error.message || "Unknown error"}` };
   }
 }
