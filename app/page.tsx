@@ -105,6 +105,10 @@ export default async function Home() {
       favorites: [],
       createdAt: p.createdAt.toISOString(),
       updatedAt: p.updatedAt.toISOString(),
+      category: {
+        ...p.category,
+        stories: [],
+      },
     } as Product;
   });
 
