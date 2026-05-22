@@ -30,14 +30,19 @@ function mapPrismaProduct(p: any): Product {
       name: p.category.name,
       slug: p.category.slug,
       image: p.category.image,
-      stories: [], // Stories will be populated if needed, or left empty
+      stories: [],
     },
     isPopular: p.isPopular,
     isTrending: p.isTrending,
     inStock: p.inStock,
     recipients: Array.isArray(recipients) ? recipients : [],
     occasions: Array.isArray(occasions) ? occasions : [],
-  };
+    productOptions: p.productOptions || "{}",
+    orderItems: [],
+    favorites: [],
+    createdAt: p.createdAt.toISOString(),
+    updatedAt: p.updatedAt.toISOString(),
+  } as Product;
 }
 
 export default async function Home() {

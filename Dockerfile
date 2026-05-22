@@ -14,11 +14,11 @@ COPY . .
 
 # Generate Prisma client
 # Provide a dummy DATABASE_URL during build time to avoid validation errors
-RUN DATABASE_URL="postgresql://postgres:password@localhost:5432/db" npx prisma generate
+RUN DATABASE_URL="postgresql://postgres:Allium1380@ @localhost:5432/db" npx prisma generate
 
 ENV NEXT_TELEMETRY_DISABLED 1
 # Provide a dummy DATABASE_URL during build time for Next.js build
-RUN DATABASE_URL="postgresql://postgres:password@localhost:5432/db" npm run build
+RUN DATABASE_URL="postgresql://postgres:Allium1380@ @localhost:5432/db" npm run build
 
 # Stage 3: Runner
 FROM node:20-alpine AS runner
