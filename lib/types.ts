@@ -1,8 +1,40 @@
+export type Story = {
+  id: string;
+  title: string | null;
+  description: string | null;
+  mediaUrl: string;
+  type: "image" | "video";
+  isActive: boolean;
+  categoryId: string;
+};
+
+export type SliderItem = {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  description: string | null;
+  imageUrl: string;
+  buttonText: string;
+  buttonLink: string;
+  isActive: boolean;
+};
+
+export type CategoryAttribute = {
+  id: string;
+  name: string;
+  options: {
+    id: string;
+    name: string;
+  }[];
+};
+
 export type Category = {
   id: string;
   name: string;
   slug: string;
-  image?: string | null;
+  image: string | null;
+  stories: Story[];
+  attributes?: CategoryAttribute[];
 };
 
 export type Recipient =
@@ -30,9 +62,15 @@ export type Product = {
   categoryId: string;
   category: Category;
   isPopular: boolean;
+  isTrending: boolean;
   inStock: boolean;
+  productOptions: string; // JSON string
   recipients?: string[];
   occasions?: string[];
+  orderItems: any[];
+  favorites: any[];
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type User = {

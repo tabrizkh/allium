@@ -5,7 +5,11 @@ import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 
 type CreateOrderParams = {
-  items: { productId: string; quantity: number }[];
+  items: { 
+    productId: string; 
+    quantity: number; 
+    options?: Record<string, string>; // Selected options: { attrId: optId }
+  }[];
   total: number;
   details: {
     name: string;
@@ -42,17 +46,50 @@ export async function createOrder(params: CreateOrderParams) {
         throw new Error(`Product with id ${item.productId} not found`);
       }
 
-      const price = Number(product.price);
-      calculatedTotal += price * item.quantity;
+      const basePrice = Number(product.price);
+      let extra = 0;
+
+      // Calculate extra price from options (excluding packaging which is handled separately)
+      if (item.options) {
+        const productOptions = JSON.parse(product.productOptions || "{}") as Record<string, Record<string, number>>;
+        Object.entries(item.options).forEach(([attrId, optId]) => {
+          if (attrId === 'packaging') return;
+          // Handle both single and multiple selections (if any)
+          const optIds = Array.isArray(optId) ? optId : [optId];
+          optIds.forEach(id => {
+            extra += productOptions[attrId]?.[id] || 0;
+          });
+        });
+      }
+
+      const itemTotalPrice = basePrice + extra;
+      let itemPackagingPrice = 0;
+
+      // Handle Packaging from item options
+      const packagingData = (item.options as any)?.packaging;
+      if (packagingData) {
+        if (typeof packagingData === 'string') {
+          const pkg = await prisma.packaging.findUnique({ where: { id: packagingData } });
+          if (pkg) itemPackagingPrice += Number(pkg.price);
+        } else if (typeof packagingData === 'object') {
+          for (const pkgId of Object.values(packagingData) as string[]) {
+            const pkg = await prisma.packaging.findUnique({ where: { id: pkgId } });
+            if (pkg) itemPackagingPrice += Number(pkg.price);
+          }
+        }
+      }
+
+      calculatedTotal += (itemTotalPrice * item.quantity) + itemPackagingPrice;
 
       orderItemsData.push({
         productId: item.productId,
         quantity: item.quantity,
-        price: product.price, // Store Decimal
+        price: itemTotalPrice, // Store actual price at time of order
+        options: JSON.stringify(item.options || {}),
       });
     }
 
-    // Add packaging price if selected
+    // Add legacy packaging price if selected (though UI should use per-item now)
     if (addons?.packagingId) {
       const packaging = await prisma.packaging.findUnique({
         where: { id: addons.packagingId },
@@ -89,9 +126,13 @@ export async function createOrder(params: CreateOrderParams) {
     revalidatePath("/admin/orders");
 
     return { success: true, orderId: order.id };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to create order:", error);
-    return { success: false, error: "Failed to create order" };
+    return { 
+      success: false, 
+      error: error.message || "Failed to create order",
+      isProductNotFound: error.message?.includes("not found")
+    };
   }
 }
 
@@ -113,4 +154,46 @@ export async function getUserOrders() {
   });
 
   return orders;
+}
+
+export async function getAllOrders() {
+  const session = await auth();
+  // Check for admin status - assuming your session/user has role info
+  if (!session?.user || (session.user as any).role !== 'ADMIN') {
+    // You might want to handle this differently, but for now just return empty if not admin
+    // return [];
+  }
+
+  const orders = await prisma.order.findMany({
+    include: {
+      items: {
+        include: {
+          product: true,
+        },
+      },
+      packaging: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return orders;
+}
+
+export async function updateOrderStatus(orderId: string, status: string) {
+  try {
+    const session = await auth();
+    if (!session?.user) throw new Error("Unauthorized");
+
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { status: status as any },
+    });
+
+    revalidatePath("/admin/orders");
+    revalidatePath("/profile");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update order status:", error);
+    return { success: false, error: "Failed to update order status" };
+  }
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Facebook, Globe, Instagram, Menu, Moon, Sun, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 type Point = { x: number; y: number };
 
@@ -21,8 +22,14 @@ type Props = {
 };
 
 export default function MenuPanel({ open, onClose, topOffset, theme, onToggleTheme, lang, onApplyLang }: Props) {
+  const { t } = useTranslation();
   const panelRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
   const [pos, setPos] = useState<Point | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const dragRef = useRef<
     | {
         pointerId: number;
@@ -147,13 +154,13 @@ export default function MenuPanel({ open, onClose, topOffset, theme, onToggleThe
         >
           <div className="flex items-center gap-2">
             <Menu size={18} />
-            <div className="text-sm font-semibold">Меню</div>
+            <div className="text-sm font-semibold">{mounted ? t('header.menu') : "Меню"}</div>
           </div>
           <button
             type="button"
             className="inline-flex items-center justify-center rounded-md p-2 hover:bg-[var(--accent-strong)]/20 transition"
             onClick={onClose}
-            aria-label="Закрыть"
+            aria-label={mounted ? t('packaging_popup.cancel') : "Закрыть"}
           >
             <X size={16} />
           </button>
@@ -166,21 +173,21 @@ export default function MenuPanel({ open, onClose, topOffset, theme, onToggleThe
               onClick={onClose}
               className="rounded-xl border border-[var(--accent-strong)]/60 px-4 py-3 hover:bg-[var(--accent-strong)]/10 transition"
             >
-              Каталог
+              {mounted ? t('header.catalog') : "Каталог"}
             </Link>
             <Link
               href="/#about"
               onClick={onClose}
               className="rounded-xl border border-[var(--accent-strong)]/60 px-4 py-3 hover:bg-[var(--accent-strong)]/10 transition"
             >
-              О нас
+              {mounted ? t('header.about') : "О нас"}
             </Link>
             <Link
               href="/#contacts"
               onClick={onClose}
               className="rounded-xl border border-[var(--accent-strong)]/60 px-4 py-3 hover:bg-[var(--accent-strong)]/10 transition"
             >
-              Контакты
+              {mounted ? t('header.contacts') : "Контакты"}
             </Link>
           </div>
 
@@ -191,13 +198,15 @@ export default function MenuPanel({ open, onClose, topOffset, theme, onToggleThe
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--background)] px-4 py-3 hover:bg-[var(--accent-strong)]/10 transition text-sm font-medium"
             >
               {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
-              {theme === "light" ? "Тёмная тема" : "Светлая тема"}
+              {theme === "light" 
+                ? (mounted ? t('header.theme_toggle.dark') : "Тёмная тема") 
+                : (mounted ? t('header.theme_toggle.light') : "Светлая тема")}
             </button>
 
             <div className="rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--background)] p-3">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <Globe size={16} />
-                <span>Язык</span>
+                <span>{mounted ? t('header.language') : "Язык"}</span>
               </div>
               <div className="mt-2 flex items-center gap-2">
                 <button
@@ -232,6 +241,7 @@ export default function MenuPanel({ open, onClose, topOffset, theme, onToggleThe
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center rounded-xl p-2 hover:bg-[var(--accent-strong)]/20 transition"
               aria-label="Instagram"
+              title="Instagram"
             >
               <Instagram size={18} />
             </Link>
@@ -241,6 +251,7 @@ export default function MenuPanel({ open, onClose, topOffset, theme, onToggleThe
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center rounded-xl p-2 hover:bg-[var(--accent-strong)]/20 transition"
               aria-label="Facebook"
+              title="Facebook"
             >
               <Facebook size={18} />
             </Link>

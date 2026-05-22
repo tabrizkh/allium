@@ -1,12 +1,13 @@
 "use client";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Product, Category, Recipient, Occasion, User } from "../lib/types";
+import type { Product, Category, Recipient, Occasion, User, SliderItem } from "../lib/types";
 import { toggleFavoriteAction } from "@/app/actions/user";
 
 type State = {
   products: Product[];
   categories: Category[];
+  sliderItems: SliderItem[];
   search: string;
   selectedCategories: Category[];
   selectedRecipients: Recipient[];
@@ -15,7 +16,7 @@ type State = {
   minPrice: number;
   maxPrice: number;
   favorites: string[]; // product ids
-  cart: Record<string, number>; // product id -> qty
+  cart: any[]; // Changed to array of cart items
   user: User | null;
   authPanelOpen: boolean;
   authPanelTab: "login" | "register";
@@ -24,6 +25,7 @@ type State = {
 type Actions = {
   setProducts: (products: Product[]) => void;
   setCategories: (categories: Category[]) => void;
+  setSliderItems: (items: SliderItem[]) => void;
   setSearch: (q: string) => void;
   toggleCategory: (c: Category) => void;
   clearCategories: () => void;
@@ -33,10 +35,11 @@ type Actions = {
   clearOccasions: () => void;
   setPriceRange: (range: [number, number]) => void;
   resetPriceRange: () => void;
-  toggleFavorite: (id: string) => void;
+  toggleFavorite: (id: string) => Promise<void>;
   setFavorites: (ids: string[]) => void;
-  addToCart: (id: string) => void;
-  removeFromCart: (id: string) => void;
+  addToCart: (product: any) => void;
+  removeFromCart: (cartItemId: string) => void;
+  updateCartQuantity: (cartItemId: string, quantity: number) => void;
   clearCart: () => void;
   setUser: (user: User | null) => void;
   login: (email: string) => void; // Deprecated, keep for now or remove
@@ -52,6 +55,7 @@ export const useShopStore = create<State & Actions>()(
     (set, get) => ({
       products: [],
       categories: [],
+      sliderItems: [],
       search: "",
       selectedCategories: [],
       selectedRecipients: [],
@@ -60,7 +64,7 @@ export const useShopStore = create<State & Actions>()(
       maxPrice: 10000,
       priceRange: [0, 10000],
       favorites: [],
-      cart: {},
+      cart: [],
       user: null,
       authPanelOpen: false,
       authPanelTab: "register",
@@ -76,6 +80,7 @@ export const useShopStore = create<State & Actions>()(
         });
       },
       setCategories: (categories) => set({ categories }),
+      setSliderItems: (sliderItems) => set({ sliderItems }),
       setSearch: (q) => set({ search: q }),
       toggleCategory: (c) => {
         const arr = get().selectedCategories;
@@ -113,36 +118,111 @@ export const useShopStore = create<State & Actions>()(
       resetPriceRange: () => {
         set({ priceRange: [get().minPrice, get().maxPrice] });
       },
-      toggleFavorite: (id) => {
-        const arr = get().favorites;
-        const user = get().user;
-        const wasIn = arr.includes(id);
-        const next = wasIn ? arr.filter((x) => x !== id) : [...arr, id];
-        set({ favorites: next });
+      toggleFavorite: async (id: string) => {
+        const currentFavs = Array.isArray(get().favorites) ? get().favorites : [];
+        const isFav = currentFavs.includes(id);
         
+        // Optimistic UI update
+        const nextFavs = isFav 
+          ? currentFavs.filter((fid: string) => fid !== id) 
+          : [...currentFavs, id];
+        
+        set({ favorites: nextFavs });
+
+        // Sync with DB if logged in
+        const user = get().user;
         if (user) {
-          toggleFavoriteAction(id).catch((err) => console.error("Failed to sync favorite", err));
+          try {
+            await toggleFavoriteAction(id);
+          } catch (error) {
+            console.error("Failed to sync favorite with DB:", error);
+            // Rollback on error
+            set({ favorites: currentFavs });
+          }
         } else {
-          if (!wasIn && next.length === 1) set({ authPanelOpen: true, authPanelTab: "register" });
+          if (!isFav && nextFavs.length === 1) set({ authPanelOpen: true, authPanelTab: "register" });
         }
       },
       setFavorites: (ids) => set({ favorites: ids }),
-      addToCart: (id) => {
-        const prevCart = get().cart;
-        const prevCount = Object.values(prevCart).reduce((a, b) => a + b, 0);
-        const cart = { ...prevCart };
-        cart[id] = (cart[id] || 0) + 1;
-        set({ cart });
-        if (!get().user && prevCount === 0) set({ authPanelOpen: true, authPanelTab: "register" });
+      addToCart: (productWithChoice: any) => {
+        const isIdOnly = typeof productWithChoice === "string";
+        const productId = isIdOnly ? productWithChoice : productWithChoice.id;
+        const baseProduct = isIdOnly 
+          ? get().products.find(p => p.id === productId) 
+          : productWithChoice;
+        
+        if (!baseProduct) {
+          console.error("Product not found for ID:", productId);
+          return;
+        }
+
+        // Normalize options: if string ID passed, options are empty.
+        // If object passed, use its selectedOptions.
+        const selectedOptions = isIdOnly ? {} : (productWithChoice.selectedOptions || {});
+        
+        // Consistent ID for the same product with same options
+        const cartItemId = `${productId}-${JSON.stringify(selectedOptions)}`;
+        
+        const currentCart = Array.isArray(get().cart) ? get().cart : [];
+        const existingIndex = currentCart.findIndex((item: any) => item.id === cartItemId);
+        
+        let nextCart = [...currentCart];
+        if (existingIndex > -1) {
+          nextCart[existingIndex] = { 
+            ...nextCart[existingIndex], 
+            quantity: nextCart[existingIndex].quantity + 1 
+          };
+        } else {
+          // Ensure price is a Number (Decimal from Prisma can cause issues in state)
+          const price = typeof baseProduct.price === 'number' 
+            ? baseProduct.price 
+            : Number(baseProduct.price);
+
+          let imageUrl = "/placeholder.jpg";
+          if (Array.isArray(baseProduct.images) && baseProduct.images.length > 0) {
+            imageUrl = baseProduct.images[0];
+          } else if (typeof baseProduct.images === 'string') {
+            try {
+              const parsed = JSON.parse(baseProduct.images);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                imageUrl = parsed[0];
+              }
+            } catch (e) {}
+          }
+
+          const newItem = {
+            id: cartItemId,
+            productId: productId,
+            name: baseProduct.name,
+            price: price,
+            image: imageUrl || "/placeholder.jpg",
+            quantity: 1,
+            categoryId: baseProduct.categoryId,
+            selectedOptions: selectedOptions
+          };
+          nextCart.push(newItem);
+        }
+        
+        set({ cart: nextCart });
+        
+        // Auto-open register if first item and not logged in
+        if (!get().user && currentCart.length === 0) {
+          set({ authPanelOpen: true, authPanelTab: "register" });
+        }
       },
-      removeFromCart: (id) => {
-        const cart = { ...get().cart };
-        if (!cart[id]) return;
-        if (cart[id] <= 1) delete cart[id];
-        else cart[id] = cart[id] - 1;
-        set({ cart });
+      removeFromCart: (cartItemId) => {
+        const currentCart = Array.isArray(get().cart) ? get().cart : [];
+        set({ cart: currentCart.filter((item: any) => item.id !== cartItemId) });
       },
-      clearCart: () => set({ cart: {} }),
+      updateCartQuantity: (cartItemId, quantity) => {
+        const currentCart = Array.isArray(get().cart) ? get().cart : [];
+        set({
+          cart: currentCart.map((item: any) => 
+            item.id === cartItemId ? { ...item, quantity: Math.max(1, quantity) } : item
+          )
+        });
+      },
+      clearCart: () => set({ cart: [] }),
       setUser: (user) => set({ user }),
       login: (email) => {
         // Deprecated mock login
@@ -178,6 +258,7 @@ export const useShopStore = create<State & Actions>()(
           ...p,
           products: current.products.length > 0 ? current.products : (p?.products || []),
           categories: current.categories.length > 0 ? current.categories : (p?.categories || []),
+          sliderItems: current.sliderItems.length > 0 ? current.sliderItems : (p?.sliderItems || []),
           selectedCategories: Array.isArray(sc) ? (sc as Category[]) : [],
           favorites: Array.isArray(fav) ? (fav as string[]) : [],
           selectedRecipients: Array.isArray(sr) ? (sr as Recipient[]) : [],

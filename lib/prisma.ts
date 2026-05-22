@@ -1,12 +1,22 @@
 import { PrismaClient } from "@prisma/client"
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3"
+import { PrismaPg } from "@prisma/adapter-pg"
+import pg from "pg"
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
+const connectionString = process.env.DATABASE_URL
 
-const adapter = new PrismaBetterSqlite3({
-  url: process.env.DATABASE_URL
-})
+const prismaClientSingleton = () => {
+  const pool = new pg.Pool({ connectionString })
+  const adapter = new PrismaPg(pool)
+  return new PrismaClient({ 
+    adapter,
+    log: ['query', 'error', 'warn'],
+  })
+}
 
-export const prisma = globalForPrisma.prisma || new PrismaClient({ adapter })
+declare global {
+  var prisma: ReturnType<typeof prismaClientSingleton> | undefined
+}
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
+export const prisma = globalThis.prisma ?? prismaClientSingleton()
+
+if (process.env.NODE_ENV !== 'production') globalThis.prisma = prisma

@@ -1,12 +1,18 @@
 "use client";
 import Image from "next/image";
  
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
  
 
+import { useShopStore } from "../store/useShopStore";
+import { useTranslation } from "react-i18next";
+
 export default function HeroShowcase() {
+  const { sliderItems } = useShopStore();
+  const { t, i18n } = useTranslation();
   const SLIDE_MS = 5200;
+  const [mounted, setMounted] = useState(false);
   const [index, setIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const startRef = useRef<number>(0);
@@ -14,39 +20,52 @@ export default function HeroShowcase() {
   const rafRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
 
-  const slides = [
-    
-    {
-      id: "h2",
-      title: "Букеты недели",
-      caption: "Нежные композиции со скидкой",
-      description:
-        "Самые популярные букеты недели — идеальны для свидания, дня рождения или просто так, без повода.",
-      points: ["Флорист подберёт оттенки", "Свежие поставки ежедневно"],
-      image: "/bukets.webp",
-      category: "bouquets",
-    },
-    {
-      id: "h3",
-      title: "Вазы и декоры",
-      caption: "Минимализм и стиль",
-      description:
-        "Стекло, керамика и фактурные формы — чтобы букет выглядел ещё эффектнее и жил дольше дома.",
-      points: ["Подбираем под интерьер", "Можно в подарок вместе с цветами"],
-      image: "/vase.webp",
-      category: "vases",
-    },
-    {
-      id: "h4",
-      title: "Подарочные наборы",
-      caption: "Удобно и красиво",
-      description:
-        "Добавьте к букету подарок: сладости, открытку или милые детали — чтобы впечатление было ещё сильнее.",
-      points: ["Соберём набор за вас", "Красиво как на фото"],
-      image: "/podarok.webp",
-      category: "gifts",
-    },
-  ];
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const lang = i18n.language;
+  const slides = useMemo(() => {
+    const rawSlides = sliderItems.length > 0 ? sliderItems : [
+      {
+        id: "h2",
+        title: "Букеты недели",
+        title_en: "Bouquets of the week",
+        title_az: "Həftənin buketləri",
+        subtitle: "Нежные композиции со скидкой",
+        subtitle_en: "Delicate compositions with a discount",
+        subtitle_az: "Endirimli zərif kompozisiyalar",
+        description: "Самые популярные букеты недели — идеальны для свидания, дня рождения или просто так, без повода.",
+        description_en: "The most popular bouquets of the week - perfect for a date, a birthday or just like that, for no reason.",
+        description_az: "Həftənin ən populyar buketləri - görüş, ad günü və ya saxicə olaraq, heç bir səbəb olmadan idealdır.",
+        imageUrl: "/bukets.webp",
+        buttonText: "Смотреть каталог",
+        buttonText_en: "View catalog",
+        buttonText_az: "Kataloqa bax",
+        buttonLink: "/#catalog"
+      },
+    ];
+
+    return rawSlides.map(s => {
+      // For hydration safety, always return default language if not mounted
+      if (!mounted) {
+        return {
+          ...s,
+          title: s.title,
+          subtitle: s.subtitle,
+          description: s.description,
+          buttonText: s.buttonText,
+        };
+      }
+      return {
+        ...s,
+        title: lang === 'az' ? s.title_az || s.title : lang === 'en' ? s.title_en || s.title : s.title,
+        subtitle: lang === 'az' ? s.subtitle_az || s.subtitle : lang === 'en' ? s.subtitle_en || s.subtitle : s.subtitle,
+        description: lang === 'az' ? s.description_az || s.description : lang === 'en' ? s.description_en || s.description : s.description,
+        buttonText: lang === 'az' ? s.buttonText_az || s.buttonText : lang === 'en' ? s.buttonText_en || s.buttonText : s.buttonText,
+      };
+    });
+  }, [sliderItems, lang, mounted]);
 
   const stop = useCallback(() => {
     if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
@@ -111,7 +130,7 @@ export default function HeroShowcase() {
             className={`absolute inset-0 transition-opacity duration-500 ${index === i ? "opacity-100" : "opacity-0"}`}
           >
             <div className="mx-auto max-w-6xl px-0 sm:px-4 h-full">
-              <div className="relative h-full flex flex-col md:flex-row overflow-hidden border border-[var(--accent-strong)]/35 bg-[var(--panel-bg)] rounded-none sm:rounded-r-3xl sm:rounded-l-none">
+              <div className="relative h-full flex flex-col md:flex-row overflow-hidden border border-[var(--accent-strong)]/35 bg-[var(--panel-bg)] ">
                 <div className="absolute left-4 right-4 bottom-4 z-20 flex gap-1.5">
                   {slides.map((_, k) => (
                     <div key={k} className="h-1.5 flex-1 rounded-full bg-white/15 overflow-hidden">
@@ -130,35 +149,27 @@ export default function HeroShowcase() {
                   ))}
                 </div>
                 <div className="relative w-full md:w-[58%] h-[380px] sm:h-[420px] md:h-full">
-                  <Image src={s.image} alt={s.title} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover transition-transform duration-500 hover:scale-[1.02]" priority />
+                  <Image src={s.imageUrl} alt={s.title} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover transition-transform duration-500 hover:scale-[1.02]" priority />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-black/0" />
                 </div>
                 <div className="relative w-full md:w-[42%] p-5 sm:p-8 md:p-12 flex flex-col justify-center items-start">
                   <h1 className="text-3xl md:text-4xl font-semibold tracking-tight leading-[1.1]">{s.title}</h1>
-                  <p className="mt-2 text-sm md:text-base text-[var(--accent)]">{s.caption}</p>
+                  <p className="mt-2 text-sm md:text-base text-[var(--accent)]">{s.subtitle}</p>
                   <p className="mt-4 text-sm md:text-base text-[var(--foreground)]/90 leading-relaxed">
                     {s.description}
                   </p>
-                  <div className="mt-4 grid gap-2 text-sm text-[var(--foreground)]/85">
-                    {s.points.map((p: string) => (
-                      <div key={p} className="flex items-start gap-2">
-                        <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-[var(--accent-strong)]" />
-                        <span>{p}</span>
-                      </div>
-                    ))}
-                  </div>
                   <div className="mt-6 flex items-center gap-3">
-                    <button
-                      onClick={() => goToCatalog()}
+                    <a
+                      href={(s as any).buttonLink || "/#catalog"}
                       className="rounded-full border border-[var(--accent-strong)]/60 bg-[var(--buy-button-bg)] text-[var(--foreground)] px-5 py-2 text-sm hover:opacity-90"
                     >
-                      Смотреть каталог
-                    </button>
+                      {(s as any).buttonText || "Смотреть каталог"}
+                    </a>
                     <button
                       onClick={() => goToPromos()}
                       className="rounded-full border border-[var(--accent-strong)]/60 bg-[var(--background)] text-[var(--foreground)] px-5 py-2 text-sm hover:bg-[var(--accent-strong)]/15 transition"
                     >
-                      Акции
+                      {mounted ? t('header.promos') : "Акции"}
                     </button>
                   </div>
                 </div>
@@ -170,7 +181,7 @@ export default function HeroShowcase() {
         <div className="pointer-events-none absolute inset-0">
           <div className="mx-auto max-w-6xl px-0 sm:px-4 h-full relative">
             <button
-              aria-label="Предыдущий слайд"
+              aria-label={mounted ? t('header.prev') : "Назад"}
               onClick={() => {
                 elapsedRef.current = 0;
                 setProgress(0);
@@ -181,7 +192,7 @@ export default function HeroShowcase() {
               <ChevronLeft size={18} />
             </button>
             <button
-              aria-label="Следующий слайд"
+              aria-label={mounted ? t('header.next') : "Вперед"}
               onClick={() => {
                 elapsedRef.current = 0;
                 setProgress(0);

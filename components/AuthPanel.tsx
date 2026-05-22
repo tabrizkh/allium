@@ -8,6 +8,7 @@ import { register as registerAction } from "@/app/actions/auth";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 
 type Point = { x: number; y: number };
 
@@ -16,11 +17,18 @@ function clamp(value: number, min: number, max: number) {
 }
 
 export default function AuthPanel({ topOffset }: { topOffset: number }) {
+  const { t } = useTranslation();
   const { authPanelOpen, authPanelTab, setAuthPanelTab, closeAuthPanel, user } = useShopStore();
   const router = useRouter();
 
   const panelRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<Point | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const dragRef = useRef<
     | {
         pointerId: number;
@@ -128,11 +136,11 @@ export default function AuthPanel({ topOffset }: { topOffset: number }) {
     
     const cleanEmail = email.trim();
     if (!cleanEmail) {
-      toast.error("Введите email");
+      toast.error(mounted ? t('auth_panel.errors.email_required') : "Введите email");
       return;
     }
     if (!password) {
-      toast.error("Введите пароль");
+      toast.error(mounted ? t('auth_panel.errors.password_required') : "Введите пароль");
       return;
     }
 
@@ -147,30 +155,30 @@ export default function AuthPanel({ topOffset }: { topOffset: number }) {
         });
 
         if (result?.error) {
-          toast.error("Ошибка входа: Неверный email или пароль");
+          toast.error(mounted ? t('auth_panel.errors.login_failed') : "Ошибка входа: Неверный email или пароль");
         } else {
-          toast.success("Вы успешно вошли!");
+          toast.success(mounted ? t('auth_panel.success.login') : "Вы успешно вошли!");
           setPassword("");
           closeAuthPanel();
           router.refresh();
         }
       } else {
         const formData = new FormData();
-        formData.append("name", name.trim() || "Гость");
+        formData.append("name", name.trim() || (mounted ? t('reviews.buyer') : "Гость"));
         formData.append("email", cleanEmail);
         formData.append("password", password);
 
         const result = await registerAction(undefined, formData);
         
         if (result === "success") {
-          toast.success("Регистрация успешна! Теперь войдите.");
+          toast.success(mounted ? t('auth_panel.success.register') : "Регистрация успешна! Теперь войдите.");
           setAuthPanelTab("login");
         } else {
-          toast.error(result || "Ошибка регистрации");
+          toast.error(result || (mounted ? t('auth_panel.errors.register_failed') : "Ошибка регистрации"));
         }
       }
     } catch (error) {
-      toast.error("Произошла ошибка");
+      toast.error(mounted ? t('auth_panel.errors.general_error') : "Произошла ошибка");
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -179,7 +187,7 @@ export default function AuthPanel({ topOffset }: { topOffset: number }) {
 
   const handleLogout = async () => {
       await signOut({ redirect: false });
-      toast.info("Вы вышли из системы");
+      toast.info(mounted ? t('auth_panel.success.logout') : "Вы вышли из системы");
       closeAuthPanel();
       router.refresh();
   };
@@ -207,9 +215,9 @@ export default function AuthPanel({ topOffset }: { topOffset: number }) {
         >
           <div className="flex items-center gap-2">
             <UserIcon size={18} />
-            <h2 className="text-sm font-semibold">{user ? "Аккаунт" : "Вход / регистрация"}</h2>
+            <h2 className="text-sm font-semibold">{user ? (mounted ? t('auth_panel.title_account') : "Аккаунт") : (mounted ? t('auth_panel.title_login') : "Вход / регистрация")}</h2>
           </div>
-          <button className="inline-flex items-center justify-center rounded-md p-2 hover:bg-[var(--accent-strong)]/20 transition" onClick={closeAuthPanel} aria-label="Закрыть">
+          <button className="inline-flex items-center justify-center rounded-md p-2 hover:bg-[var(--accent-strong)]/20 transition" onClick={closeAuthPanel} aria-label={mounted ? t('packaging_popup.cancel') : "Закрыть"}>
             <X size={16} />
           </button>
         </div>
@@ -222,7 +230,7 @@ export default function AuthPanel({ topOffset }: { topOffset: number }) {
               {user.role === 'ADMIN' && (
                   <div className="mt-2 pt-2 border-t border-[var(--accent-strong)]/20">
                       <Link href="/admin/products" className="text-xs font-bold text-[var(--accent)] hover:underline block" onClick={closeAuthPanel}>
-                          Панель администратора
+                          {mounted ? t('auth_panel.admin_panel') : "Панель администратора"}
                       </Link>
                   </div>
               )}
@@ -233,82 +241,82 @@ export default function AuthPanel({ topOffset }: { topOffset: number }) {
                 className="block w-full text-center rounded-xl border border-[var(--accent-strong)]/60 px-4 py-2 text-sm hover:bg-[var(--accent-strong)]/10 transition"
                 onClick={closeAuthPanel}
             >
-                Перейти в профиль
+                {mounted ? t('auth_panel.go_to_profile') : "Перейти в профиль"}
             </Link>
 
             <button type="button" onClick={handleLogout} className="w-full rounded-xl border border-[var(--accent-strong)]/60 px-4 py-2 text-sm hover:bg-[var(--accent-strong)]/10 transition text-red-500 hover:text-red-600">
-              Выйти
+              {mounted ? t('auth_panel.logout') : "Выйти"}
             </button>
           </div>
         ) : (
           <>
             <div className="p-4 pb-0">
               <div className="rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--badge-bg)]/15 p-3 text-xs leading-relaxed text-[var(--foreground)]">
-                <span className="font-semibold text-lg text-[var(--white)]">Зарегистрируйтесь, чтобы не потерять товары в корзине и избранном, быстрее оформлять заказы, получать скидки и спецпредложения!</span>
+                <span className="font-semibold text-lg text-[var(--white)]">{mounted ? t('auth_panel.register_notice') : "Зарегистрируйтесь, чтобы не потерять товары в корзине и избранном..."}</span>
               </div>
-            </div>
-
-            <div className="flex px-2 pt-3">
-              <button
-                type="button"
-                onClick={() => setAuthPanelTab("login")}
-                className={`flex-1 px-3 py-2 text-sm rounded-xl ${authPanelTab === "login" ? "bg-[var(--accent-strong)]/15" : "hover:bg-[var(--accent-strong)]/10"} transition`}
-              >
-                Вход
-              </button>
-              <button
-                type="button"
-                onClick={() => setAuthPanelTab("register")}
-                className={`flex-1 px-3 py-2 text-sm rounded-xl ${authPanelTab === "register" ? "bg-[var(--accent-strong)]/15" : "hover:bg-[var(--accent-strong)]/10"} transition`}
-              >
-                Регистрация
-              </button>
             </div>
 
             <form onSubmit={onSubmit} className="p-4 space-y-3">
               {authPanelTab === "register" && (
-                <div>
-                  <label className="block text-sm mb-1">Имя</label>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent)] ml-1">{mounted ? t('auth_panel.name') : "Имя"}</label>
                   <input
+                    type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--background)] text-[var(--foreground)] h-10 px-3 text-sm outline-none"
-                    placeholder="Ваше имя"
-                    required
+                    className="w-full rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--background)] px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--accent-strong)]/20"
+                    placeholder="Али Мамедов"
                   />
                 </div>
               )}
-              <div>
-                <label className="block text-sm mb-1">Email</label>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent)] ml-1">{mounted ? t('auth_panel.email') : "Email"}</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--background)] text-[var(--foreground)] h-10 px-3 text-sm outline-none"
-                  placeholder="name@example.com"
-                  required
+                  className="w-full rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--background)] px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--accent-strong)]/20"
+                  placeholder="hello@example.com"
                 />
               </div>
-              <div>
-                <label className="block text-sm mb-1">Пароль</label>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent)] ml-1">{mounted ? t('auth_panel.password') : "Пароль"}</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--background)] text-[var(--foreground)] h-10 px-3 text-sm outline-none"
-                  placeholder="******"
-                  required
-                  minLength={6}
+                  className="w-full rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--background)] px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--accent-strong)]/20"
+                  placeholder="••••••••"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full rounded-xl bg-[var(--accent)] text-white font-medium h-10 hover:opacity-90 transition disabled:opacity-50"
+                className="w-full rounded-xl bg-[var(--accent-strong)] py-2.5 text-sm font-bold text-white shadow-md transition hover:brightness-110 active:scale-95 disabled:opacity-50"
               >
-                {isLoading ? "Загрузка..." : authPanelTab === "login" ? "Войти" : "Зарегистрироваться"}
+                {isLoading ? "..." : (authPanelTab === "login" ? (mounted ? t('auth_panel.login_btn') : "Войти") : (mounted ? t('auth_panel.register_btn') : "Зарегистрироваться"))}
               </button>
+
+              <div className="pt-2 text-center text-xs text-[var(--accent)]">
+                {authPanelTab === "login" ? (
+                  <>
+                    {mounted ? t('auth_panel.no_account') : "Нет аккаунта?"}{" "}
+                    <button type="button" onClick={() => setAuthPanelTab("register")} className="font-bold text-[var(--accent-strong)] hover:underline">
+                      {mounted ? t('auth_panel.switch_to_register') : "Создать"}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {mounted ? t('auth_panel.have_account') : "Уже есть аккаунт?"}{" "}
+                    <button type="button" onClick={() => setAuthPanelTab("login")} className="font-bold text-[var(--accent-strong)] hover:underline">
+                      {mounted ? t('auth_panel.switch_to_login') : "Войти"}
+                    </button>
+                  </>
+                )}
+              </div>
             </form>
           </>
         )}

@@ -4,6 +4,7 @@ import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { revalidatePath } from "next/cache";
 
 export async function authenticate(
   prevState: string | undefined,
@@ -46,7 +47,7 @@ export async function register(
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  await prisma.user.create({
+  const newUser = await prisma.user.create({
     data: {
       name,
       email,
@@ -55,5 +56,17 @@ export async function register(
     },
   });
 
+  // Automatically link guest orders by email
+  await prisma.order.updateMany({
+    where: {
+      email: email,
+      userId: null
+    },
+    data: {
+      userId: newUser.id
+    }
+  });
+
+  revalidatePath("/profile");
   return "success";
 }

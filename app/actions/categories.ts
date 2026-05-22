@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 
 export async function createCategory(formData: FormData) {
   const name = formData.get("name") as string;
+  const name_en = formData.get("name_en") as string;
+  const name_az = formData.get("name_az") as string;
   const slug = formData.get("slug") as string;
   const image = formData.get("image") as string;
 
@@ -16,11 +18,14 @@ export async function createCategory(formData: FormData) {
     await prisma.category.create({
       data: {
         name,
+        name_en,
+        name_az,
         slug,
         image: image || null,
       },
     });
     revalidatePath("/admin/categories");
+    revalidatePath("/");
     return { success: true };
   } catch (error) {
     console.error("Error creating category:", error);
@@ -30,6 +35,8 @@ export async function createCategory(formData: FormData) {
 
 export async function updateCategory(id: string, formData: FormData) {
   const name = formData.get("name") as string;
+  const name_en = formData.get("name_en") as string;
+  const name_az = formData.get("name_az") as string;
   const slug = formData.get("slug") as string;
   const image = formData.get("image") as string;
 
@@ -42,11 +49,14 @@ export async function updateCategory(id: string, formData: FormData) {
       where: { id },
       data: {
         name,
+        name_en,
+        name_az,
         slug,
         image: image || null,
       },
     });
     revalidatePath("/admin/categories");
+    revalidatePath("/");
     return { success: true };
   } catch (error) {
     console.error("Error updating category:", error);
@@ -60,6 +70,7 @@ export async function deleteCategory(id: string) {
       where: { id },
     });
     revalidatePath("/admin/categories");
+    revalidatePath("/");
     return { success: true };
   } catch (error) {
     console.error("Error deleting category:", error);

@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useShopStore } from "../store/useShopStore";
+import { useTranslation } from "react-i18next";
 import type { Category } from "../lib/types";
 
 type StoryItem = {
@@ -19,78 +20,65 @@ type Tile = {
   stories: StoryItem[];
 };
 
-const tiles: Tile[] = [
-  {
-    slug: "bouquets",
-    title: "Букеты",
-    image: "/bukets.webp",
-    stories: [
-      { type: "image", src: "/bukets.webp", headline: "Букеты", subline: "Свежие композиции на каждый день" },
-      { type: "image", src: "/1.webp", headline: "Доставка", subline: "Быстро и аккуратно" },
-      { type: "image", src: "/test1.png", headline: "Подбор", subline: "Под повод и бюджет" },
-    ],
-  },
-  {
-    slug: "gifts",
-    title: "Подарки",
-    image: "/podarok.webp",
-    stories: [
-      { type: "image", src: "/podarok.webp", headline: "Подарки", subline: "Добавьте сюрприз к букету" },
-      { type: "image", src: "/hero-gifts.svg", headline: "Идея", subline: "Соберите сет за пару кликов" },
-      { type: "image", src: "/test2.png", headline: "Упаковка", subline: "Красиво как на фото" },
-    ],
-  },
-  {
-    slug: "decorations",
-    title: "Декор",
-    image: "/dekor.jpg",
-    stories: [
-      { type: "image", src: "/dekor.jpg", headline: "Декор", subline: "Для дома и событий" },
-      { type: "image", src: "/hero-premium.svg", headline: "Стиль", subline: "Лаконично и современно" },
-      { type: "image", src: "/test333.png", headline: "Акценты", subline: "Мелочи решают" },
-    ],
-  },
-  {
-    slug: "vases",
-    title: "Вазы",
-    image: "/vase.webp",
-    stories: [
-      { type: "image", src: "/vase.webp", headline: "Вазы", subline: "Под любой интерьер" },
-      { type: "image", src: "/hero-vases.svg", headline: "Комбо", subline: "Ваза + цветы = готовый подарок" },
-      { type: "image", src: "/2.webp", headline: "Формы", subline: "От минимализма до классики" },
-    ],
-  },
-  {
-    slug: "flowers",
-    title: "Цветы",
-    image: "/6.webp",
-    stories: [
-      { type: "image", src: "/6.webp", headline: "Цветы", subline: "Сезонные и премиум" },
-      { type: "image", src: "/main.jpg", headline: "Настроение", subline: "Цвет — это эмоция" },
-      { type: "image", src: "/4.webp", headline: "Свежесть", subline: "Только лучшие поставки" },
-    ],
-  },
-  {
-    slug: "sets",
-    title: "Сеты",
-    image: "/sets.jpg",
-    stories: [
-      { type: "image", src: "/sets.jpg", headline: "Сеты", subline: "Готовые наборы" },
-      { type: "image", src: "/hero-flowers.svg", headline: "Вместе", subline: "Цветы + подарки + декор" },
-      { type: "image", src: "/test22.png", headline: "Выгодно", subline: "Комплектом приятнее" },
-    ],
-  },
-];
-
 export default function CategoryTiles() {
   const STORY_MS = 4800;
   const { categories: allCategories, toggleCategory, clearCategories } = useShopStore();
+  const { t, i18n } = useTranslation();
+  
+  const [mounted, setMounted] = useState(false);
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const [storyIndex, setStoryIndex] = useState(0);
   const [storyProgress, setStoryProgress] = useState(0);
   const storyStartRef = useRef<number>(0);
   const rafRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const tiles = useMemo(() => {
+    const lang = i18n.language;
+    return allCategories
+      .map((c) => {
+        // Hydration safety: use default names if not mounted
+        const catName = !mounted 
+          ? c.name 
+          : (lang === 'az' ? c.name_az || c.name : lang === 'en' ? c.name_en || c.name : c.name);
+        
+        return {
+          slug: c.slug,
+          title: catName,
+          image: c.image || "/placeholder.jpg",
+          stories: (c.stories && c.stories.length > 0) 
+            ? c.stories.map((s) => ({
+                type: s.type,
+                src: s.mediaUrl,
+                headline: !mounted 
+                  ? s.title || catName 
+                  : (lang === 'az' ? s.title_az || s.title : lang === 'en' ? s.title_en || s.title : s.title) || catName,
+                subline: !mounted 
+                  ? s.description || "" 
+                  : (lang === 'az' ? s.description_az || s.description : lang === 'en' ? s.description_en || s.description : s.description) || "",
+              }))
+            : [{
+                type: "image",
+                src: c.image || "/placeholder.jpg",
+                headline: catName,
+                subline: "",
+              }],
+        };
+      })
+      .sort((a, b) => {
+        const order = ["bouquets", "gifts", "decorations", "vases", "flowers", "sets"];
+        const idxA = order.indexOf(a.slug);
+        const idxB = order.indexOf(b.slug);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return 0;
+      });
+  }, [allCategories, i18n.language, mounted]);
 
   const goToCatalog = () => {
     const el = document.querySelector("#catalog");
@@ -199,8 +187,8 @@ export default function CategoryTiles() {
 
       {openSlug && activeTile && (
         <div className="fixed inset-0 z-50">
-          <button className="absolute inset-0 bg-black/55" onClick={closeStories} aria-label="Закрыть истории" />
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] sm:w-[420px] max-w-[calc(100vw-24px)] з-4">
+          <button className="absolute inset-0 bg-black/55" onClick={closeStories} aria-label={mounted ? t('packaging_popup.cancel') : "Закрыть"} />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] sm:w-[420px] max-w-[calc(100vw-24px)] z-50">
             <div className="rounded-3xl border border-[var(--accent-strong)]/60 bg-[var(--panel-bg)] shadow-2xl overflow-hidden p-4">
               <div className="p-3">
                 <div className="flex gap-1.5">
@@ -229,7 +217,7 @@ export default function CategoryTiles() {
                     type="button"
                     onClick={closeStories}
                     className="inline-flex items-center justify-center rounded-xl p-2 hover:bg-[var(--accent-strong)]/20 transition"
-                    aria-label="Закрыть"
+                    aria-label={mounted ? t('packaging_popup.cancel') : "Закрыть"}
                   >
                     <X size={18} />
                   </button>
@@ -253,7 +241,7 @@ export default function CategoryTiles() {
                   className={`absolute left-3 top-1/2 -translate-y-1/2 rounded-full p-2 border border-[var(--accent-strong)]/60 bg-[var(--panel-bg)]/80 backdrop-blur transition ${
                     storyIndex === 0 ? "opacity-40" : "hover:opacity-90"
                   }`}
-                  aria-label="Предыдущая история"
+                  aria-label={mounted ? t('header.prev') : "Назад"}
                 >
                   <ChevronLeft size={18} />
                 </button>
@@ -261,7 +249,7 @@ export default function CategoryTiles() {
                   type="button"
                   onClick={goNext}
                   className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-2 border border-[var(--accent-strong)]/60 bg-[var(--panel-bg)]/80 backdrop-blur hover:opacity-90 transition"
-                  aria-label="Следующая история"
+                  aria-label={mounted ? t('header.next') : "Вперед"}
                 >
                   <ChevronRight size={18} />
                 </button>
@@ -272,7 +260,7 @@ export default function CategoryTiles() {
                     onClick={() => goToCategory(activeTile.slug)}
                     className="w-full rounded-2xl bg-[var(--buy-button-bg)] text-[var(--foreground)] px-4 py-3 text-sm font-semibold hover:opacity-90 transition"
                   >
-                    Перейти к {activeTile.title.toLowerCase()}
+                    {mounted ? t('header.catalog') : "Перейти"}
                   </button>
                 </div>
               </div>

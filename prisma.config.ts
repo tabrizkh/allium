@@ -3,7 +3,7 @@ import 'dotenv/config';
 
 export default defineConfig({
   migrations: {
-    seed: 'npx tsx prisma/seed.ts',
+    seed: 'tsx prisma/seed.ts',
   },
   datasource: {
     url: env("DATABASE_URL"),

@@ -1,0 +1,256 @@
+
+{
+  "header": {
+    "search": "Search...",
+    "categories": "Categories",
+    "products": "Products",
+    "theme": {
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "favorites": "Favorites",
+    "cart": "Cart",
+    "profile": "Profile",
+    "menu": "Menu",
+    "catalog": "Catalog",
+    "about": "About Us",
+    "contacts": "Contacts",
+    "promos": "Promos",
+    "theme_toggle": {
+      "light": "Light Mode",
+      "dark": "Dark Mode"
+    },
+    "language": "Language",
+    "logout": "Logout"
+  },
+  "cart": {
+    "title": "Cart",
+    "empty": "Your cart is empty",
+    "checkout": "Checkout",
+    "total": "Total"
+  },
+  "product": {
+    "add_to_cart": "Add to cart",
+    "buy_now": "Buy now",
+    "reviews": "Reviews",
+    "no_reviews": "No reviews yet",
+    "in_stock": "In stock",
+    "out_of_stock": "Out of stock",
+    "about": "About Product",
+    "description": "Description",
+    "your_review": "Your review",
+    "review_placeholder": "Your impressions...",
+    "submit_review": "Send",
+    "submitting": "Sending...",
+    "auth_to_review": "Only authorized users can leave reviews.",
+    "be_first": "Be the first!",
+    "question": "Question",
+    "contact": "Contact"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "submit_login": "Sign in",
+    "submit_register": "Sign up"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "your_order": "Your Order",
+    "add_packaging": "Add Packaging",
+    "change_packaging": "Change Packaging",
+    "packaging_total": "Packaging total",
+    "total": "Total",
+    "add_card": "Add a gift card?",
+    "card_recipient": "Recipient?",
+    "card_text": "Card message",
+    "card_placeholder": "Write your greeting...",
+    "templates": "Ready templates",
+    "form": {
+      "title": "Details",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "city": "City",
+      "address": "Address",
+      "comment": "Order comment",
+      "comment_placeholder": "Door code, wishes...",
+      "submit": "Confirm order",
+      "loading": "Processing...",
+      "address_placeholder": "Street, house, apt."
+    },
+    "confirm_modal": {
+      "title": "Nothing selected",
+      "text": "You haven't selected packaging or a card for your order. Do you want to proceed without them?",
+      "confirm": "Yes, proceed as is",
+      "cancel": "No, I want to choose"
+    },
+    "guest_notice": {
+      "title": "Thanks for your order!",
+      "text": "Your order has been successfully placed. Would you like to register? This will allow you to track order status, receive bonuses and personal discounts!",
+      "register": "Register",
+      "later": "Later, to home"
+    },
+    "product_not_found": "Some items in your cart are outdated. The cart will be cleared.",
+    "error": "Error placing order",
+    "item_number": "Item #{{number}}",
+    "product_deleted": "Product deleted"
+  },
+  "packaging_popup": {
+    "title": "Packaging for product",
+    "same_to_all": "Apply same to all:",
+    "no_packaging": "No packaging",
+    "no_found": "No packaging found for this category",
+    "cancel": "Cancel",
+    "save": "Save selection"
+  },
+  "common": {
+    "items_count": "{{count}} pcs.",
+    "price_manat": "{{price}} ₼"
+  },
+  "footer": {
+    "description": "The best flowers and gifts for your loved ones. We create moments of happiness.",
+    "catalog": "Catalog",
+    "contacts": "Contacts",
+    "socials": "Follow us",
+    "address": "Baku, Azerbaijan",
+    "all_rights": "All rights reserved."
+  },
+  "profile": {
+    "title": "My Profile",
+    "orders": "My Orders",
+    "addresses": "My Addresses",
+    "favorites": "Favorites",
+    "edit_profile": "Edit Profile",
+    "no_orders": "You have no orders yet",
+    "no_favorites": "Your favorites list is empty",
+    "order_number": "Order #{{number}}",
+    "order_status": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    }
+  },
+  "favorites": {
+    "title": "Favorites",
+    "empty": "You haven't added any products to your favorites yet"
+  },
+  "filters": {
+    "recipient": "For whom?",
+    "occasion": "For what?",
+    "price": "Price",
+    "reset": "Reset filters",
+    "recipients": {
+      "wife": "Wife",
+      "mom": "Mom",
+      "children": "Children",
+      "colleague": "Colleague",
+      "friend": "Friends"
+    },
+    "occasions": {
+      "wedding": "Wedding",
+      "nishan": "Nishan",
+      "gift": "Gift",
+      "holiday": "Holiday",
+      "birthday": "Birthday"
+    }
+  },
+  "hero": {
+    "tiles": {
+      "under_50": "Under 50 ₼",
+      "50_100": "50–100 ₼",
+      "premium": "Premium",
+      "vases": "Vases",
+      "for_children": "For children",
+      "gifts": "Gifts",
+      "bouquets": "Bouquets",
+      "minimalism": "Minimalism",
+      "delicate": "Delicate compositions",
+      "sets": "Sets",
+      "trending": "Trending Now"
+    }
+  },
+  "features": {
+    "title": "Why allium",
+    "quality": {
+      "title": "Quality and Service",
+      "desc": "Florists collect by hand and with love."
+    },
+    "eco": {
+      "title": "Conscious Approach",
+      "desc": "Eco-friendly packaging and sustainable practices."
+    },
+    "style": {
+      "title": "Style and Individuality",
+      "desc": "We create bouquets that reflect your taste."
+    },
+    "convenience": {
+      "title": "Convenient Purchase",
+      "desc": "Fast and pleasant process."
+    },
+    "delivery": {
+      "title": "Same Day Delivery",
+      "desc": "Joy doesn't wait."
+    },
+    "cards": {
+      "title": "Personal Cards",
+      "desc": "We will add a warm message."
+    },
+    "packaging": {
+      "title": "Premium Packaging",
+      "desc": "Aesthetics and neat presentation."
+    },
+    "guarantee": {
+      "title": "Quality Guarantee",
+      "desc": "We solve issues quickly and carefully."
+    }
+  },
+  "reviews": {
+    "buyer": "Customer",
+    "auth_required": "Please log in to leave a review",
+    "text_required": "Please write your review text"
+  },
+  "auth_panel": {
+    "title_login": "Login / Register",
+    "title_account": "Account",
+    "admin_panel": "Admin Panel",
+    "go_to_profile": "Go to Profile",
+    "logout": "Logout",
+    "register_notice": "Register to not lose items in your cart and favorites, checkout faster, and get discounts!",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "login_btn": "Login",
+    "register_btn": "Register",
+    "no_account": "No account?",
+    "have_account": "Already have an account?",
+    "switch_to_register": "Create",
+    "switch_to_login": "Login",
+    "errors": {
+      "email_required": "Enter email",
+      "password_required": "Enter password",
+      "login_failed": "Login failed: Invalid email or password",
+      "register_failed": "Registration failed",
+      "general_error": "An error occurred"
+    },
+    "success": {
+      "login": "Login successful!",
+      "register": "Registration successful! Now please login.",
+      "logout": "Logged out successfully",
+      "order": "Order placed successfully!"
+    },
+    "recipients": {
+      "mom": "Mom",
+      "wife": "Wife",
+      "girlfriend": "Girlfriend",
+      "daughter": "Daughter",
+      "colleague": "Colleague",
+      "husband": "Husband",
+      "grandma": "Grandma",
+      "sister": "Sister",
+      "other": "Other"
+    }
+  }
+}

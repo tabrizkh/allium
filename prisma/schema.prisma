@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model User {
@@ -23,6 +23,7 @@ model User {
   orders        Order[]
   addresses     Address[]
   favorites     Favorite[]
+  reviews       Review[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -65,18 +66,50 @@ model VerificationToken {
 model Category {
   id        String    @id @default(cuid())
   name      String
+  name_en   String?
+  name_az   String?
   slug      String    @unique
   image     String?
   products  Product[]
+  stories   Story[]
+  attributes Attribute[]
+  packaging Packaging[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+}
+
+model Attribute {
+  id          String   @id @default(cuid())
+  name        String   // e.g. "Размер", "Упаковка"
+  name_en     String?
+  name_az     String?
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  options     AttributeOption[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AttributeOption {
+  id          String   @id @default(cuid())
+  name        String   // e.g. "S", "M", "L" or "Стандарт", "Премиум"
+  name_en     String?
+  name_az     String?
+  attributeId String
+  attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Product {
   id          String   @id @default(cuid())
   name        String
+  name_en     String?
+  name_az     String?
   slug        String   @unique
   description String?
+  description_en String?
+  description_az String?
   price       Decimal
   oldPrice    Decimal?
   images      String   // Stored as JSON string of URLs
@@ -85,19 +118,46 @@ model Product {
   categoryId  String
   category    Category @relation(fields: [categoryId], references: [id])
   isPopular   Boolean  @default(false)
+  isTrending  Boolean  @default(false)
   inStock     Boolean  @default(true)
+  
+  // New field for storing selected attributes and their price adjustments
+  // JSON structure: { "AttributeID": { "OptionID": priceAdjustment, ... }, ... }
+  productOptions String @default("{}") 
+
   orderItems  OrderItem[]
   favorites   Favorite[]
+  reviews     Review[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  rating      Int      @default(5)
+  text        String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
 model Story {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   title     String?
+  title_en  String?
+  title_az  String?
+  description String?
+  description_en String?
+  description_az String?
   mediaUrl  String
   type      String   @default("image") // "image" or "video"
   isActive  Boolean  @default(true)
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
   createdAt DateTime @default(now())
   expiresAt DateTime?
 }
@@ -131,17 +191,25 @@ model Order {
 }
 
 model Packaging {
-  id        String   @id @default(cuid())
-  name      String
-  price     Decimal
-  image     String?
-  isAvailable Boolean @default(true)
-  orders    Order[]
+  id          String   @id @default(cuid())
+  name        String
+  name_en     String?
+  name_az     String?
+  price       Decimal
+  image       String?
+  isAvailable Boolean  @default(true)
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orders      Order[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model CardTemplate {
   id        String   @id @default(cuid())
   text      String
+  text_en   String?
+  text_az   String?
   recipient String   // e.g. "mom", "wife"
   createdAt DateTime @default(now())
 }
@@ -154,6 +222,7 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int
   price     Decimal
+  options   String  @default("{}") // Store selected options as JSON string
 }
 
 model Address {
@@ -176,4 +245,26 @@ model Favorite {
   createdAt DateTime @default(now())
 
   @@unique([userId, productId])
+}
+
+model SliderItem {
+  id          String   @id @default(cuid())
+  title       String
+  title_en    String?
+  title_az    String?
+  subtitle    String?
+  subtitle_en String?
+  subtitle_az String?
+  description String?
+  description_en String?
+  description_az String?
+  imageUrl    String
+  buttonText  String   @default("Смотреть каталог")
+  buttonText_en String?
+  buttonText_az String?
+  buttonLink  String   @default("/#catalog")
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

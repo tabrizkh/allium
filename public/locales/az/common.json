@@ -1,0 +1,256 @@
+
+{
+  "header": {
+    "search": "Axtar...",
+    "categories": "Kateqoriyalar",
+    "products": "Məhsullar",
+    "theme": {
+      "light": "İşıqlı",
+      "dark": "Qaranlıq"
+    },
+    "favorites": "Seçilmişlər",
+    "cart": "Səbət",
+    "profile": "Profil",
+    "menu": "Menyu",
+    "catalog": "Kataloq",
+    "about": "Haqqımızda",
+    "contacts": "Əlaqə",
+    "promos": "Aksiyalar",
+    "theme_toggle": {
+      "light": "İşıqlı mövzu",
+      "dark": "Qaranlıq mövzu"
+    },
+    "language": "Dil",
+    "logout": "Çıxış"
+  },
+  "cart": {
+    "title": "Səbət",
+    "empty": "Səbətiniz boşdur",
+    "checkout": "Sifarişi rəsmiləşdir",
+    "total": "Cəmi"
+  },
+  "product": {
+    "add_to_cart": "Səbətə at",
+    "buy_now": "İndi al",
+    "reviews": "Rəylər",
+    "no_reviews": "Hələlik rəy yoxdur",
+    "in_stock": "Anbarda var",
+    "out_of_stock": "Anbarda yoxdur",
+    "about": "Məhsul haqqında",
+    "description": "Təsvir",
+    "your_review": "Sizin rəyiniz",
+    "review_placeholder": "Təəssüratlarınız...",
+    "submit_review": "Göndər",
+    "submitting": "Göndərilir...",
+    "auth_to_review": "Yalnız qeydiyyatdan keçmiş istifadəçilər rəy bildirə bilər.",
+    "be_first": "İlk siz olun!",
+    "question": "Sual",
+    "contact": "Əlaqə saxla"
+  },
+  "auth": {
+    "login": "Daxil ol",
+    "register": "Qeydiyyat",
+    "email": "Email",
+    "password": "Şifrə",
+    "submit_login": "Daxil ol",
+    "submit_register": "Hesab yarat"
+  },
+  "checkout": {
+    "title": "Sifarişin rəsmiləşdirilməsi",
+    "your_order": "Sizin sifarişiniz",
+    "add_packaging": "Qablaşdırma əlavə et",
+    "change_packaging": "Qablaşdırmanı dəyiş",
+    "packaging_total": "Məhsulların qablaşdırılması",
+    "total": "Cəmi",
+    "add_card": "Açıqca əlavə edilsin?",
+    "card_recipient": "Kimə açıqca?",
+    "card_text": "Açıqca mətni",
+    "card_placeholder": "Təbrik mətni yazın...",
+    "templates": "Hazır şablonlar",
+    "form": {
+      "title": "Rəsmiləşdirmə",
+      "name": "Ad",
+      "email": "Email",
+      "phone": "Telefon",
+      "city": "Şəhər",
+      "address": "Ünvan",
+      "comment": "Sifarişə şərh",
+      "comment_placeholder": "Domofon kodu, arzular...",
+      "submit": "Sifarişi təsdiqlə",
+      "loading": "Rəsmiləşdirilir...",
+      "address_placeholder": "Küçə, ev, mənzil."
+    },
+    "confirm_modal": {
+      "title": "Heç nə seçilməyib",
+      "text": "Sifarişiniz üçün qablaşdırma və ya açıqca seçməmisiniz. Onlarsız davam etmək istəyirsiniz?",
+      "confirm": "Bəli, olduğu kimi",
+      "cancel": "Xeyr, seçmək istəyirəm"
+    },
+    "guest_notice": {
+      "title": "Sifariş üçün təşəkkür edirik!",
+      "text": "Sifarişiniz uğurla qəbul edildi. Qeydiyyatdan keçmək istəyirsiniz? Bu, sifarişin statusunu izləməyə, bonuslar və fərdi endirimlər almağa imkan verəcək!",
+      "register": "Qeydiyyatdan keç",
+      "later": "Sonra, ana səhifəyə"
+    },
+    "product_not_found": "Səbətinizdəki bəzi məhsullar köhnəlib. Səbət təmizlənəcək.",
+    "error": "Sifariş zamanı xəta baş verdi",
+    "item_number": "Məhsul #{{number}}",
+    "product_deleted": "Məhsul silinib"
+  },
+  "packaging_popup": {
+    "title": "Məhsul üçün qablaşdırma",
+    "same_to_all": "Hamısına eyni olsun:",
+    "no_packaging": "Qablaşdırmasız",
+    "no_found": "Bu kateqoriya üçün qablaşdırma tapılmadı",
+    "cancel": "Ləğv et",
+    "save": "Seçimi saxla"
+  },
+  "common": {
+    "items_count": "{{count}} əd.",
+    "price_manat": "{{price}} ₼"
+  },
+  "footer": {
+    "description": "Yaxınlarınız üçün ən yaxşı güllər və hədiyyələr. Biz xoşbəxtlik anları yaradırıq.",
+    "catalog": "Kataloq",
+    "contacts": "Əlaqə",
+    "socials": "Sosial şəbəkələrimiz",
+    "address": "Bakı, Azərbaycan",
+    "all_rights": "Bütün hüquqlar qorunur."
+  },
+  "profile": {
+    "title": "Mənim profilim",
+    "orders": "Sifarişlərim",
+    "addresses": "Ünvanlarım",
+    "favorites": "Seçilmişlər",
+    "edit_profile": "Profili redaktə et",
+    "no_orders": "Hələ ki sifarişiniz yoxdur",
+    "no_favorites": "Seçilmişlər siyahısı boşdur",
+    "order_number": "Sifariş №{{number}}",
+    "order_status": {
+      "pending": "Gözləmədə",
+      "paid": "Ödənilib",
+      "delivered": "Çatdırılıb",
+      "cancelled": "Ləğv edilib"
+    }
+  },
+  "favorites": {
+    "title": "Seçilmişlər",
+    "empty": "Hələ ki heç bir məhsulu seçilmişlərə əlavə etməmisiniz"
+  },
+  "filters": {
+    "recipient": "Kimə?",
+    "occasion": "Nə üçün?",
+    "price": "Qiymət",
+    "reset": "Filtrləri sıfırla",
+    "recipients": {
+      "wife": "Həyat yoldaşına",
+      "mom": "Anaya",
+      "children": "Uşaqlara",
+      "colleague": "Həmkarına",
+      "friend": "Dostlara"
+    },
+    "occasions": {
+      "wedding": "Toy",
+      "nishan": "Nişan",
+      "gift": "Hədiyyə",
+      "holiday": "Bayram",
+      "birthday": "Ad günü"
+    }
+  },
+  "hero": {
+    "tiles": {
+      "under_50": "50 ₼-dək",
+      "50_100": "50–100 ₼",
+      "premium": "Premium",
+      "vases": "Vazalar",
+      "for_children": "Uşaqlar üçün",
+      "gifts": "Hədiyyələr",
+      "bouquets": "Buketlər",
+      "minimalism": "Minimalizm",
+      "delicate": "Zərif kompozisiyalar",
+      "sets": "Dəstlər",
+      "trending": "Həftənin trendləri"
+    }
+  },
+  "features": {
+    "title": "Niyə allium",
+    "quality": {
+      "title": "Keyfiyyət və xidmət",
+      "desc": "Floristlər əl ilə və sevgi ilə yığırlar."
+    },
+    "eco": {
+      "title": "Şüurlu yanaşma",
+      "desc": "Ekoloji qablaşdırma və davamlı təcrübələr."
+    },
+    "style": {
+      "title": "Üslub və fərdilik",
+      "desc": "Zövqünüzü əks etdirən buketlər yaradırıq."
+    },
+    "convenience": {
+      "title": "Rahat alış",
+      "desc": "Sürətli və xoş proses."
+    },
+    "delivery": {
+      "title": "Sifariş günü çatdırılma",
+      "desc": "Sevinc gözləmir."
+    },
+    "cards": {
+      "title": "Fərdi açıqcalar",
+      "desc": "İsti bir mesaj əlavə edəcəyik."
+    },
+    "packaging": {
+      "title": "Premium qablaşdırma",
+      "desc": "Estetika və səliqəli təqdimat."
+    },
+    "guarantee": {
+      "title": "Keyfiyyət zəmanəti",
+      "desc": "Məsələləri tez və diqqətlə həll edirik."
+    }
+  },
+  "reviews": {
+    "buyer": "Alıcı",
+    "auth_required": "Rəy bildirmək üçün hesabınıza daxil olun",
+    "text_required": "Rəy mətnini yazın"
+  },
+  "auth_panel": {
+    "title_login": "Giriş / Qeydiyyat",
+    "title_account": "Hesab",
+    "admin_panel": "Admin Paneli",
+    "go_to_profile": "Profilə keç",
+    "logout": "Çıxış",
+    "register_notice": "Səbətdəki və seçilmişlərdəki məhsulları itirməmək, sifarişləri daha sürətli rəsmiləşdirmək və endirimlər almaq üçün qeydiyyatdan keçin!",
+    "name": "Ad",
+    "email": "Email",
+    "password": "Şifrə",
+    "login_btn": "Daxil ol",
+    "register_btn": "Qeydiyyatdan keç",
+    "no_account": "Hesabınız yoxdur?",
+    "have_account": "Artıq hesabınız var?",
+    "switch_to_register": "Yarat",
+    "switch_to_login": "Daxil ol",
+    "errors": {
+      "email_required": "Emaili daxil edin",
+      "password_required": "Şifrəni daxil edin",
+      "login_failed": "Giriş xətası: Yanlış email və ya şifrə",
+      "register_failed": "Qeydiyyat xətası",
+      "general_error": "Xəta baş verdi"
+    },
+    "success": {
+      "login": "Uğurla daxil oldunuz!",
+      "register": "Qeydiyyat uğurludur! İndi daxil olun.",
+      "logout": "Sistemdən çıxdınız",
+      "order": "Sifariş uğurla rəsmiləşdirildi!"
+    },
+    "recipients": {
+      "mom": "Anaya",
+      "wife": "Həyat yoldaşına",
+      "girlfriend": "Sevgilisinə",
+      "daughter": "Qızına",
+      "colleague": "Həmkarına",
+      "husband": "Yoldaşına",
+      "grandma": "Nənəyə",
+      "sister": "Bacısına",
+      "other": "Digər"
+    }
+  }
+}

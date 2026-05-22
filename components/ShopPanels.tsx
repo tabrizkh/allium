@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, ShoppingBag, ShoppingCart, X } from "lucide-react";
+import { Heart, ShoppingBag, ShoppingCart, X, Plus, Minus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useShopStore } from "../store/useShopStore";
+import { useTranslation } from "react-i18next";
 
 type Point = { x: number; y: number };
 
@@ -21,7 +22,14 @@ type Props = {
 };
 
 export default function ShopPanels({ favoritesOpen, cartOpen, onCloseFavorites, onCloseCart, topOffset }: Props) {
-  const { favorites, cart, products, addToCart, removeFromCart, toggleFavorite } = useShopStore();
+  const { t, i18n } = useTranslation();
+  const { favorites, cart, products, addToCart, removeFromCart, updateCartQuantity, toggleFavorite, categories } = useShopStore();
+
+  const lang = i18n.language;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const favoritesList = useMemo(() => (Array.isArray(favorites) ? favorites : []), [favorites]);
 
@@ -30,6 +38,47 @@ export default function ShopPanels({ favoritesOpen, cartOpen, onCloseFavorites, 
 
   const [favoritesPos, setFavoritesPos] = useState<Point | null>(null);
   const [cartPos, setCartPos] = useState<Point | null>(null);
+
+  const cartItems = Array.isArray(cart) ? cart : [];
+
+  const getOptionName = (productId: string, attrId: string, optId: string) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) return "";
+    const category = categories.find(c => c.id === product.categoryId);
+    if (!category) return "";
+    const attr = category.attributes?.find(a => a.id === attrId);
+    if (!attr) return "";
+    const opt = attr.options.find(o => o.id === optId);
+    if (!opt) return "";
+    return lang === 'az' ? opt.name_az || opt.name : lang === 'en' ? opt.name_en || opt.name : opt.name;
+  };
+
+  const getAttributeName = (productId: string, attrId: string) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) return "";
+    const category = categories.find(c => c.id === product.categoryId);
+    if (!category) return "";
+    const attr = category.attributes?.find(a => a.id === attrId);
+    if (!attr) return "";
+    return lang === 'az' ? attr.name_az || attr.name : lang === 'en' ? attr.name_en || attr.name : attr.name;
+  };
+
+  const renderOptions = (item: any) => {
+    if (!item.selectedOptions) return null;
+    
+    return Object.entries(item.selectedOptions as Record<string, string | string[]>).map(([attrId, val]) => {
+      const attrName = getAttributeName(item.productId, attrId);
+      const optIds = Array.isArray(val) ? val : [val];
+      
+      if (optIds.length === 0) return null;
+
+      return (
+        <span key={attrId} className="text-[10px] bg-[var(--accent-strong)]/10 px-1.5 py-0.5 rounded-full text-[var(--foreground)]/70">
+          {attrName}: {optIds.map(id => getOptionName(item.productId, attrId, id)).join(", ")}
+        </span>
+      );
+    });
+  };
 
   const dragRef = useRef<
     | {
@@ -193,12 +242,12 @@ export default function ShopPanels({ favoritesOpen, cartOpen, onCloseFavorites, 
           >
             <div className="flex items-center gap-2">
               <Heart size={18} />
-              <h2 className="text-sm font-semibold">Избранное</h2>
+              <h2 className="text-sm font-semibold">{mounted ? t('header.favorites') : "Избранное"}</h2>
             </div>
             <button
               className="inline-flex items-center justify-center rounded-md p-2 hover:bg-[var(--accent-strong)]/20 transition"
               onClick={onCloseFavorites}
-              aria-label="Закрыть"
+              aria-label={mounted ? t('packaging_popup.cancel') : "Закрыть"}
             >
               <X size={16} />
             </button>
@@ -208,35 +257,41 @@ export default function ShopPanels({ favoritesOpen, cartOpen, onCloseFavorites, 
               <div className="grid grid-cols-1 gap-3">
                 {products
                   .filter((p) => favoritesList.includes(p.id))
-                  .map((p) => (
-                    <div key={p.id} className="flex items-center gap-3 rounded-xl border border-[var(--accent-strong)]/60 p-2 bg-[var(--background)]">
-                      <Image src={p.images[0]} alt={p.name} width={72} height={72} className="h-18 w-18 rounded-lg object-cover" />
-                      <div className="flex-1">
-                        <div className="text-sm font-medium truncate">{p.name}</div>
-                        <div className="text-xs text-[var(--accent)]">{p.price} ₼</div>
+                  .map((p) => {
+                    const name = lang === 'az' ? p.name_az || p.name : lang === 'en' ? p.name_en || p.name : p.name;
+                    return (
+                      <div key={p.id} className="flex gap-3 items-center group">
+                        <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                          <Image src={p.images?.[0] || "/placeholder.jpg"} alt={name} fill className="object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium truncate">{name}</div>
+                          <div className="text-xs text-[var(--accent)]">{p.price} ₼</div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => addToCart(p.id)}
+                            className="p-2 rounded-lg hover:bg-[var(--accent-strong)]/15 transition text-[var(--accent-strong)]"
+                            title={mounted ? t('product.add_to_cart') : "В корзину"}
+                          >
+                            <ShoppingCart size={16} />
+                          </button>
+                          <button
+                            onClick={() => toggleFavorite(p.id)}
+                            className="p-2 rounded-lg hover:bg-red-50 transition text-red-500"
+                            title={mounted ? t('favorites.remove') : "Удалить"}
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => toggleFavorite(p.id)}
-                          className="rounded-full p-2 border border-[var(--accent-strong)]/60 hover:bg-[var(--accent-strong)]/15 transition"
-                          aria-label="Убрать из избранного"
-                        >
-                          <Heart size={16} />
-                        </button>
-                        <button
-                          onClick={() => addToCart(p.id)}
-                          aria-label="Добавить в корзину"
-                          title="Добавить в корзину"
-                          className="inline-flex items-center justify-center rounded-full p-2 border border-[var(--accent-strong)]/60 bg-[var(--background)] text-[var(--foreground)] hover:opacity-80 transition shadow-sm"
-                        >
-                          <ShoppingCart size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
               </div>
             ) : (
-              <p className="text-[var(--accent)]">Список избранного пуст.</p>
+              <div className="text-center py-8 text-[var(--accent)] text-sm">
+                {mounted ? t('favorites.empty') : "Список избранного пуст"}
+              </div>
             )}
           </div>
         </div>
@@ -251,7 +306,7 @@ export default function ShopPanels({ favoritesOpen, cartOpen, onCloseFavorites, 
         ].join(" ")}
         style={cartStyle}
       >
-        <div className="rounded-2xl border border-[var(--accent-strong)]/60 bg-[var(--panel-bg)] shadow-xl overflow-hidden">
+        <div className="rounded-2xl border border-[var(--accent-strong)]/60 bg-[var(--panel-bg)] shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
           <div
             className="flex items-center justify-between px-3 py-2 border-b border-[var(--accent-strong)]/40 select-none touch-none"
             onPointerDown={(e) => startDrag("cart", e)}
@@ -259,63 +314,89 @@ export default function ShopPanels({ favoritesOpen, cartOpen, onCloseFavorites, 
           >
             <div className="flex items-center gap-2">
               <ShoppingBag size={18} />
-              <h2 className="text-sm font-semibold">Корзина</h2>
+              <h2 className="text-sm font-semibold">{mounted ? t('header.cart') : "Корзина"}</h2>
             </div>
             <button
               className="inline-flex items-center justify-center rounded-md p-2 hover:bg-[var(--accent-strong)]/20 transition"
               onClick={onCloseCart}
-              aria-label="Закрыть"
+              aria-label={mounted ? t('packaging_popup.cancel') : "Закрыть"}
             >
               <X size={16} />
             </button>
           </div>
-          <div className="p-3 max-h-[70vh] overflow-auto">
-            {Object.keys(cart).length > 0 ? (
-              <div className="space-y-3">
-                {Object.entries(cart).map(([id, qty]) => {
-                  const product = products.find((p) => p.id === id);
-                  if (!product) return null;
+          
+          <div className="flex-1 overflow-auto p-3">
+            {cartItems.length > 0 ? (
+              <div className="space-y-4">
+                {cartItems.map((item) => {
+                  const p = products.find((x) => x.id === item.productId);
+                  if (!p) return null;
+                  const name = lang === 'az' ? p.name_az || p.name : lang === 'en' ? p.name_en || p.name : p.name;
+                  
                   return (
-                    <div key={id} className="flex items-center gap-3 rounded-xl border border-[var(--accent-strong)]/60 p-2 bg-[var(--background)]">
-                      <Image src={product.images[0]} alt={product.name} width={72} height={72} className="h-18 w-18 rounded-lg object-cover" />
-                      <div className="flex-1">
-                        <div className="text-sm font-medium truncate">{product.name}</div>
-                        <div className="text-xs text-[var(--accent)]">{product.price} ₼</div>
+                    <div key={item.id} className="flex gap-3">
+                      <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                        <Image src={p.images?.[0] || "/placeholder.jpg"} alt={name} fill className="object-cover" />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => removeFromCart(id)} className="rounded-lg border border-[var(--accent-strong)]/60 px-2 py-1" aria-label="Убавить">
-                          −
-                        </button>
-                        <span className="w-8 text-center">{qty}</span>
-                        <button onClick={() => addToCart(id)} className="rounded-lg border border-[var(--accent-strong)]/60 px-2 py-1" aria-label="Добавить">
-                          +
-                        </button>
+                      <div className="flex-1 min-w-0 flex flex-col">
+                        <div className="text-sm font-medium truncate">{name}</div>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {renderOptions(item)}
+                        </div>
+                        <div className="mt-auto flex items-center justify-between">
+                          <div className="flex items-center gap-2 bg-[var(--accent-strong)]/10 rounded-lg px-1">
+                            <button
+                              onClick={() => updateCartQuantity(item.id, Math.max(1, item.quantity - 1))}
+                              className="p-1 hover:text-[var(--accent-strong)] transition"
+                            >
+                              <Minus size={14} />
+                            </button>
+                            <span className="text-xs font-medium w-4 text-center">{item.quantity}</span>
+                            <button
+                              onClick={() => updateCartQuantity(item.id, item.quantity + 1)}
+                              className="p-1 hover:text-[var(--accent-strong)] transition"
+                            >
+                              <Plus size={14} />
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm font-bold">{p.price * item.quantity} ₼</span>
+                            <button
+                              onClick={() => removeFromCart(item.id)}
+                              className="text-red-400 hover:text-red-500 transition"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   );
                 })}
-                <div className="flex items-center justify-between border-t border-[var(--accent-strong)]/60 pt-3">
-                  <div className="text-sm font-semibold">
-                    Итого:{" "}
-                    {Object.entries(cart).reduce((sum, [id, qty]) => {
-                      const p = products.find((x) => x.id === id);
-                      return sum + (p ? p.price * qty : 0);
-                    }, 0)}{" "}
-                    ₼
-                  </div>
-                  <Link 
-                    href="/checkout" 
-                    onClick={onCloseCart}
-                    className="rounded-xl bg-[var(--buy-button-bg)] text-[var(--foreground)] px-4 py-2 text-sm hover:opacity-90 transition"
-                  >
-                    Оформить заказ
-                  </Link>
-                </div>
               </div>
             ) : (
-              <p className="text-[var(--accent)]">Корзина пуста.</p>
+              <div className="text-center py-12 text-[var(--accent)]">
+                <div className="mb-2 opacity-20 flex justify-center"><ShoppingBag size={48} /></div>
+                <div className="text-sm">{mounted ? t('cart.empty') : "Ваша корзина пуста"}</div>
+              </div>
             )}
           </div>
+
+          {cartItems.length > 0 && (
+            <div className="p-4 border-t border-[var(--accent-strong)]/40 bg-[var(--accent-strong)]/5">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm text-[var(--accent)]">{mounted ? t('checkout.total') : "Итого"}</span>
+                <span className="text-xl font-bold">{cartItems.reduce((acc, item) => acc + (item.price || 0) * item.quantity, 0)} ₼</span>
+              </div>
+              <Link
+                href="/checkout"
+                onClick={onCloseCart}
+                className="block w-full text-center bg-[var(--accent-strong)] text-white py-3 rounded-xl font-bold shadow-lg hover:brightness-110 transition active:scale-[0.98]"
+              >
+                {mounted ? t('header.cart') : "Перейти к оформлению"}
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </>

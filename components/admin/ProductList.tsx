@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { createProduct, updateProduct, deleteProduct } from "@/app/actions/products";
-import { Edit, Trash2, Plus, X } from "lucide-react";
+import { createProduct, updateProduct, deleteProduct, toggleTrending } from "@/app/actions/products";
+import { Edit, Trash2, Plus, X, Star, TrendingUp } from "lucide-react";
 import Image from "next/image";
 import ImageUpload from "@/components/admin/ImageUpload";
 import { recipientLabels, occasionLabels } from "@/lib/constants";
@@ -23,12 +23,29 @@ type Product = {
   images: string;
   description: string | null;
   isPopular: boolean;
+  isTrending: boolean;
   inStock: boolean;
+  productOptions?: string; // JSON string
   recipients?: string; // JSON string
   occasions?: string; // JSON string
 };
 
-export default function ProductList({ products, categories }: { products: any[], categories: Category[] }) {
+type AttributeOption = {
+  id: string;
+  name: string;
+};
+
+type Attribute = {
+  id: string;
+  name: string;
+  options: AttributeOption[];
+};
+
+type ExtendedCategory = Category & {
+  attributes: Attribute[];
+};
+
+export default function ProductList({ products, categories }: { products: any[], categories: ExtendedCategory[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
@@ -43,6 +60,8 @@ export default function ProductList({ products, categories }: { products: any[],
         price: Number(product.price),
         oldPrice: product.oldPrice ? Number(product.oldPrice) : null,
         categoryId: product.categoryId,
+        productOptions: product.productOptions,
+        isTrending: product.isTrending,
     });
     setIsModalOpen(true);
   };
@@ -74,6 +93,7 @@ export default function ProductList({ products, categories }: { products: any[],
               <th className="p-4 font-medium text-gray-500">Название</th>
               <th className="p-4 font-medium text-gray-500">Категория</th>
               <th className="p-4 font-medium text-gray-500">Цена</th>
+              <th className="p-4 font-medium text-gray-500">Тренды</th>
               <th className="p-4 font-medium text-gray-500 text-right">Действия</th>
             </tr>
           </thead>
@@ -96,7 +116,20 @@ export default function ProductList({ products, categories }: { products: any[],
                         </td>
                         <td className="p-4 font-medium">{product.name}</td>
                         <td className="p-4 text-gray-500">{product.category.name}</td>
-                        <td className="p-4 text-gray-900 font-medium">{Number(product.price).toLocaleString()} ₽</td>
+                        <td className="p-4 text-gray-900 font-medium">{Number(product.price).toLocaleString()} ₼</td>
+                        <td className="p-4">
+                            <button
+                                onClick={() => toggleTrending(product.id, !product.isTrending)}
+                                className={`p-2 rounded-lg transition-all ${
+                                    product.isTrending 
+                                    ? "bg-amber-100 text-amber-600 hover:bg-amber-200" 
+                                    : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                                }`}
+                                title={product.isTrending ? "Убрать из трендов" : "Добавить в тренды"}
+                            >
+                                <TrendingUp size={18} />
+                            </button>
+                        </td>
                         <td className="p-4 text-right">
                         <div className="flex justify-end gap-2">
                             <button
@@ -139,20 +172,69 @@ export default function ProductList({ products, categories }: { products: any[],
 }
 
 
-function ProductModal({ product, categories, onClose }: { product: Product | null; categories: Category[]; onClose: () => void }) {
+function LanguageTabs({ activeLang, onChange }: { activeLang: string; onChange: (lang: string) => void }) {
+  return (
+    <div className="flex bg-gray-100 p-1 rounded-lg w-fit mb-2">
+      {['ru', 'en', 'az'].map((lang) => (
+        <button
+          key={lang}
+          type="button"
+          onClick={() => onChange(lang)}
+          className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+            activeLang === lang ? 'bg-white shadow-sm text-[var(--accent)]' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          {lang.toUpperCase()}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ProductModal({ product, categories, onClose }: { product: any | null; categories: ExtendedCategory[]; onClose: () => void }) {
   const isEditing = !!product;
-  const [images, setImages] = useState<string[]>(product?.images ? JSON.parse(product.images) : []);
+  const [activeLang, setActiveLang] = useState("ru");
+  
+  // Multilang states
+  const [names, setNames] = useState({
+    ru: product?.name || "",
+    en: product?.name_en || "",
+    az: product?.name_az || "",
+  });
+  const [descriptions, setDescriptions] = useState({
+    ru: product?.description || "",
+    en: product?.description_en || "",
+    az: product?.description_az || "",
+  });
+
+  const [images, setImages] = useState<string[]>(product?.images ? (typeof product.images === 'string' ? JSON.parse(product.images) : product.images) : []);
   const [recipients, setRecipients] = useState<Recipient[]>(
-    product?.recipients ? JSON.parse(product.recipients) : []
+    product?.recipients ? (typeof product.recipients === 'string' ? JSON.parse(product.recipients) : product.recipients) : []
   );
   const [occasions, setOccasions] = useState<Occasion[]>(
-    product?.occasions ? JSON.parse(product.occasions) : []
+    product?.occasions ? (typeof product.occasions === 'string' ? JSON.parse(product.occasions) : product.occasions) : []
   );
+  const [selectedCategoryId, setSelectedCategoryId] = useState(product?.categoryId || "");
+  const [productOptions, setProductOptions] = useState<Record<string, Record<string, number>>>(
+    product?.productOptions ? (typeof product.productOptions === 'string' ? JSON.parse(product.productOptions) : product.productOptions) : {}
+  );
+  const [isTrending, setIsTrending] = useState(product?.isTrending || false);
+
+  const selectedCategory = categories.find(c => c.id === selectedCategoryId);
 
   async function handleSubmit(formData: FormData) {
+    formData.set("name", names.ru);
+    formData.set("name_en", names.en);
+    formData.set("name_az", names.az);
+    formData.set("description", descriptions.ru);
+    formData.set("description_en", descriptions.en);
+    formData.set("description_az", descriptions.az);
+    
     formData.set("images", JSON.stringify(images));
     formData.set("recipients", JSON.stringify(recipients));
     formData.set("occasions", JSON.stringify(occasions));
+    formData.set("productOptions", JSON.stringify(productOptions));
+    formData.set("isTrending", isTrending ? "on" : "off");
 
     if (isEditing && product) {
       await updateProduct(product.id, formData);
@@ -161,6 +243,40 @@ function ProductModal({ product, categories, onClose }: { product: Product | nul
     }
     onClose();
   }
+
+  const toggleOption = (attributeId: string, optionId: string) => {
+    setProductOptions(prev => {
+      const next = { ...prev };
+      if (!next[attributeId]) {
+        next[attributeId] = { [optionId]: 0 };
+      } else if (next[attributeId][optionId] !== undefined) {
+        // Option exists, remove it
+        const { [optionId]: _, ...remainingOptions } = next[attributeId];
+        if (Object.keys(remainingOptions).length === 0) {
+          delete next[attributeId];
+        } else {
+          next[attributeId] = remainingOptions;
+        }
+      } else {
+        // Add new option to existing attribute
+        next[attributeId] = {
+          ...next[attributeId],
+          [optionId]: 0
+        };
+      }
+      return next;
+    });
+  };
+
+  const updateOptionPrice = (attributeId: string, optionId: string, price: number) => {
+    setProductOptions(prev => ({
+      ...prev,
+      [attributeId]: {
+        ...prev[attributeId],
+        [optionId]: price
+      }
+    }));
+  };
 
   const toggleRecipient = (r: Recipient) => {
     setRecipients((prev) =>
@@ -189,16 +305,18 @@ function ProductModal({ product, categories, onClose }: { product: Product | nul
         <form action={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Название</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Название ({activeLang.toUpperCase()})</label>
+                <LanguageTabs activeLang={activeLang} onChange={setActiveLang} />
                 <input
-                name="name"
-                defaultValue={product?.name}
-                required
-                className="w-full border rounded-lg p-2"
+                  value={names[activeLang as keyof typeof names]}
+                  onChange={(e) => setNames({ ...names, [activeLang]: e.target.value })}
+                  required={activeLang === 'ru'}
+                  className="w-full border rounded-lg p-2"
                 />
             </div>
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Slug (URL)</label>
+                <div className="mb-2 h-[26px]" /> {/* Spacer to align with names */}
                 <input
                 name="slug"
                 defaultValue={product?.slug}
@@ -234,13 +352,68 @@ function ProductModal({ product, categories, onClose }: { product: Product | nul
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Категория</label>
-            <select name="categoryId" defaultValue={product?.categoryId} required className="w-full border rounded-lg p-2">
+            <select 
+              name="categoryId" 
+              value={selectedCategoryId} 
+              onChange={(e) => setSelectedCategoryId(e.target.value)}
+              required 
+              className="w-full border rounded-lg p-2"
+            >
                 <option value="">Выберите категорию</option>
                 {categories.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
             </select>
           </div>
+
+          {/* Dynamic Attributes Section */}
+          {selectedCategory && selectedCategory.attributes.length > 0 && (
+            <div className="bg-purple-50 p-4 rounded-xl space-y-4">
+              <h3 className="font-bold text-purple-900 text-sm">Характеристики категории: {selectedCategory.name}</h3>
+              <div className="grid gap-4">
+                {selectedCategory.attributes.map(attr => (
+                  <div key={attr.id} className="space-y-2">
+                    <span className="text-xs font-bold text-purple-700 uppercase tracking-wider">{attr.name}</span>
+                    <div className="grid gap-2">
+                      {attr.options.map(opt => {
+                        const isSelected = productOptions[attr.id]?.[opt.id] !== undefined;
+                        const priceAdj = productOptions[attr.id]?.[opt.id] || 0;
+                        return (
+                          <div key={opt.id} className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => toggleOption(attr.id, opt.id)}
+                              className={`flex-1 flex justify-between items-center px-3 py-2 rounded-lg border text-sm transition ${
+                                isSelected 
+                                  ? "bg-white border-purple-500 text-purple-700 shadow-sm" 
+                                  : "bg-white/50 border-gray-200 text-gray-400"
+                              }`}
+                            >
+                              <span>{opt.name}</span>
+                              {isSelected && <span className="text-[10px] font-bold">АКТИВНО</span>}
+                            </button>
+                            {isSelected && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-purple-600 font-medium">+</span>
+                                <input
+                                  type="number"
+                                  value={priceAdj === 0 ? "" : priceAdj}
+                                  onChange={(e) => updateOptionPrice(attr.id, opt.id, Number(e.target.value))}
+                                  placeholder="Цена"
+                                  className="w-24 border border-purple-200 rounded-lg p-1.5 text-sm focus:ring-1 focus:ring-purple-400 outline-none"
+                                />
+                                <span className="text-xs text-purple-600">₼</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Изображения</label>
@@ -292,10 +465,10 @@ function ProductModal({ product, categories, onClose }: { product: Product | nul
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Описание</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Описание ({activeLang.toUpperCase()})</label>
             <textarea
-              name="description"
-              defaultValue={product?.description || ""}
+              value={descriptions[activeLang as keyof typeof descriptions]}
+              onChange={(e) => setDescriptions({ ...descriptions, [activeLang]: e.target.value })}
               className="w-full border rounded-lg p-2 h-24"
             />
           </div>
@@ -304,6 +477,15 @@ function ProductModal({ product, categories, onClose }: { product: Product | nul
             <label className="flex items-center gap-2">
                 <input type="checkbox" name="isPopular" defaultChecked={product?.isPopular} />
                 <span className="text-sm">Популярный товар</span>
+            </label>
+            <label className="flex items-center gap-2">
+                <input 
+                  type="checkbox" 
+                  name="isTrending" 
+                  checked={isTrending} 
+                  onChange={(e) => setIsTrending(e.target.checked)} 
+                />
+                <span className="text-sm">В трендах</span>
             </label>
             <label className="flex items-center gap-2">
                 <input type="checkbox" name="inStock" defaultChecked={product?.inStock ?? true} />

@@ -2,9 +2,11 @@
 import { ChevronDown, Check, RotateCcw } from "lucide-react";
 import { useShopStore } from "../store/useShopStore";
 import { useRef, useEffect, useState } from "react";
-import { recipientLabels, occasionLabels, recipients as recs, occasions as occs } from "../lib/constants";
+import { recipients as recs, occasions as occs } from "../lib/constants";
+import { useTranslation } from "react-i18next";
 
 export default function Filters() {
+  const { t } = useTranslation();
   const {
     selectedRecipients,
     selectedOccasions,
@@ -18,7 +20,13 @@ export default function Filters() {
     maxPrice,
     setPriceRange,
     resetPriceRange,
+    setSearch,
   } = useShopStore();
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // локальное состояние открытия дропдаунов
   const [openRecipients, setOpenRecipients] = useState(false);
@@ -36,17 +44,19 @@ export default function Filters() {
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
+  const resetAll = () => {
+    clearRecipients();
+    clearOccasions();
+    clearCategories();
+    resetPriceRange();
+    setSearch("");
+  };
+
   return (
     <section className="mx-auto max-w-6xl px-4 mt-6" id="explore">
-    
-
       <div className="flex items-stretch gap-3 justify-between flex-wrap overflow-visible">
         {/* Кому? комбобокс */}
         <div className="relative flex-1 min-w-[240px]" ref={recRef}>
-          {/** кнопка по размеру как в категориях */}
-          {/** активное состояние — если есть выбранные получатели */}
-          {/** текст по центру, стрелка справа */}
-          {/** ширина — 100% внутри flex-колонки */}
           <button
             type="button"
             onClick={() => setOpenRecipients((v) => !v)}
@@ -58,13 +68,13 @@ export default function Filters() {
             }`}
           >
             <span className="flex-1 text-center">
-              Кому?{selectedRecipients.length ? ` (${selectedRecipients.length})` : ""}
+              {mounted ? t('filters.recipient') : "Кому?"}{selectedRecipients.length ? ` (${selectedRecipients.length})` : ""}
             </span>
             <ChevronDown size={16} className={`transition ${openRecipients ? "rotate-180" : "rotate-0"}`} />
           </button>
           {openRecipients && (
             <div
-              className="absolute left-0 top-full mt-2 w-full z-50 rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--buy-button-bg)] shadow-lg p-2"
+              className="absolute left-0 top-full mt-2 w-full z-50 rounded-xl border border-[var(--accent-strong)]/60 bg-[#d1c1ae] shadow-lg p-2" 
               role="listbox"
               aria-multiselectable
             >
@@ -80,7 +90,7 @@ export default function Filters() {
                       active ? "bg-[var(--accent-strong)]/20 text-[var(--foreground)]" : "hover:bg-[var(--accent-strong)]/15"
                     }`}
                   >
-                    <span>{recipientLabels[r]}</span>
+                    <span>{mounted ? t(`filters.recipients.${r}`) : r}</span>
                     {active && <Check size={16} />}
                   </button>
                 );
@@ -102,13 +112,13 @@ export default function Filters() {
             }`}
           >
             <span className="flex-1 text-center">
-              Для чего?{selectedOccasions.length ? ` (${selectedOccasions.length})` : ""}
+              {mounted ? t('filters.occasion') : "Для чего?"}{selectedOccasions.length ? ` (${selectedOccasions.length})` : ""}
             </span>
             <ChevronDown size={16} className={`transition ${openOccasions ? "rotate-180" : "rotate-0"}`} />
           </button>
           {openOccasions && (
             <div
-              className="absolute left-0 top-full mt-2 w-full z-50 rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--buy-button-bg)] shadow-lg p-2"
+              className="absolute left-0 top-full mt-2 w-full z-50 rounded-xl border border-[var(--accent-strong)]/60 bg-[#d1c1ae] shadow-lg p-2"
               role="listbox"
               aria-multiselectable
             >
@@ -124,7 +134,7 @@ export default function Filters() {
                       active ? "bg-[var(--accent-strong)]/20 text-[var(--foreground)]" : "hover:bg-[var(--accent-strong)]/15"
                     }`}
                   >
-                    <span>{occasionLabels[o]}</span>
+                    <span>{mounted ? t(`filters.occasions.${o}`) : o}</span>
                     {active && <Check size={16} />}
                   </button>
                 );
@@ -136,7 +146,7 @@ export default function Filters() {
         {/* Цена компактно */}
         <div className="flex-1 min-w-[240px]">
           <div className="inline-flex w-full items-center justify-between gap-2 rounded-xl  px-2 text-sm">
-            <span className="text-[var(--accent)]">Цена</span>
+            <span className="text-[var(--accent)]">{mounted ? t('filters.price') : "Цена"}</span>
             <input
               type="number"
               min={minPrice}
@@ -170,14 +180,9 @@ export default function Filters() {
         <div className="flex-none">
           <button
             type="button"
-            aria-label="Сбросить фильтры"
-            title="Сбросить фильтры"
-            onClick={() => {
-              clearCategories();
-              clearRecipients();
-              clearOccasions();
-              resetPriceRange();
-            }}
+            aria-label={mounted ? t('filters.reset') : "Сбросить фильтры"}
+            title={mounted ? t('filters.reset') : "Сбросить фильтры"}
+            onClick={resetAll}
             className="inline-flex h-full items-center justify-center rounded-xl border border-[var(--accent-strong)]/60 bg-[var(--background)] px-3 py-2 text-sm hover:bg-[var(--accent-strong)]/15 cursor-pointer"
           >
             <RotateCcw size={18} />

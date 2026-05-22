@@ -2,13 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, ShoppingBag, FolderTree, Image as ImageIcon, LogOut, Settings } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, FolderTree, Image as ImageIcon, LogOut, Settings, LayoutPanelLeft, MessageSquare, ClipboardList } from "lucide-react";
 
 const links = [
   { href: "/admin", label: "Главная", icon: LayoutDashboard },
+  { href: "/admin/orders", label: "Заказы", icon: ClipboardList },
   { href: "/admin/products", label: "Товары", icon: ShoppingBag },
   { href: "/admin/categories", label: "Категории", icon: FolderTree },
   { href: "/admin/stories", label: "Сторис", icon: ImageIcon },
+  { href: "/admin/slider", label: "Слайдер", icon: LayoutPanelLeft },
+  { href: "/admin/reviews", label: "Отзывы", icon: MessageSquare },
   { href: "/admin/settings", label: "Настройки", icon: Settings },
 ];
 

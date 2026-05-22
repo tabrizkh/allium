@@ -101,7 +101,31 @@ export async function updateProfile(data: { name?: string; phone?: string }) {
         revalidatePath("/profile");
         return { success: true };
     } catch (error) {
-        console.error(error);
+        console.error("Error updating profile:", error);
         return { success: false };
     }
+}
+
+export async function syncGuestOrders(email: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false };
+
+  try {
+    // Find orders that match the user's email but don't have a userId
+    await prisma.order.updateMany({
+      where: {
+        email: email,
+        userId: null
+      },
+      data: {
+        userId: session.user.id
+      }
+    });
+
+    revalidatePath("/profile");
+    return { success: true };
+  } catch (error) {
+    console.error("Error syncing guest orders:", error);
+    return { success: false };
+  }
 }
