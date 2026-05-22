@@ -1,5 +1,5 @@
 services:
-  allium-db:
+  alium-postgres:
     container_name: alium-postgres
     image: postgres:15-alpine
     restart: always
