@@ -1,6 +1,6 @@
 services:
   allium-db:
-    container_name: allium-db
+    container_name: alium-postgres
     image: postgres:15-alpine
     restart: always
     environment:
@@ -9,23 +9,8 @@ services:
       POSTGRES_DB: ${DB_NAME:-alium}
     volumes:
       - allium_postgres_data:/var/lib/postgresql/data
-    # Мы не пробрасываем порт 5432 наружу, чтобы не конфликтовать с другими БД.
-    # Приложение будет подключаться внутри сети Docker.
-
-  allium-app:
-    container_name: allium-app
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: always
     ports:
-      - "3001:3000" # Используем 3001 на хосте, так как 3000 может быть занят
-    environment:
-      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-Allium1380@}@allium-db:5432/${DB_NAME:-alium}?schema=public
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3001}
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-your_secret_here}
-    depends_on:
-      - allium-db
+      - "54321:5432" # Пробрасываем на 54321, как у пользователя
 
 volumes:
   allium_postgres_data:

@@ -5,7 +5,7 @@ import { getAllPackaging } from "@/app/actions/addons";
 
 export const dynamic = "force-dynamic";
 
-export default async function OrdersPage() {
+export default async function AdminOrdersPage() {
   const [ordersRaw, packagingRaw] = await Promise.all([
     getAllOrders(),
     getAllPackaging()
