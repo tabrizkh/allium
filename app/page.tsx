@@ -101,7 +101,11 @@ export default async function Home() {
       isTrending: p.isTrending,
       recipients: Array.isArray(recipients) ? recipients : [],
       occasions: Array.isArray(occasions) ? occasions : [],
-    };
+      orderItems: [],
+      favorites: [],
+      createdAt: p.createdAt.toISOString(),
+      updatedAt: p.updatedAt.toISOString(),
+    } as Product;
   });
 
   // Map categories to match the expected type
@@ -115,7 +119,7 @@ export default async function Home() {
       type: s.type as "image" | "video",
       isActive: s.isActive,
     })),
-  }));
+  })) as Category[];
 
   return (
     <main className="min-h-screen pb-20 md:pb-0">
