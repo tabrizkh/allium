@@ -1,6 +1,8 @@
 import SliderList from "@/components/admin/SliderList";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function SliderPage() {
   const items = await prisma.sliderItem.findMany({
     orderBy: { order: "asc" },

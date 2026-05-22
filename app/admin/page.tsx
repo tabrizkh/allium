@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { Users, ShoppingBag, FolderTree, Image as ImageIcon } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 async function getStats() {
   const [userCount, productCount, categoryCount, storyCount] = await Promise.all([
     prisma.user.count(),

@@ -1,6 +1,8 @@
 import StoryList from "@/components/admin/StoryList";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function StoriesPage() {
   const [stories, categories] = await Promise.all([
     prisma.story.findMany({

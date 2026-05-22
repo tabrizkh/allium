@@ -3,6 +3,8 @@ import { getAllPackaging, getCardTemplates } from "@/app/actions/addons";
 import { prisma } from "@/lib/prisma";
 import StoreInitializer from "@/components/StoreInitializer";
 
+export const dynamic = "force-dynamic";
+
 export default async function CheckoutPage() {
   const [rawPackaging, cardTemplates, productsRaw, categoriesRaw] = await Promise.all([
     getAllPackaging(),

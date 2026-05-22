@@ -3,6 +3,8 @@ import StoreInitializer from "@/components/StoreInitializer";
 import ShopPage from "@/components/ShopPage";
 import { Product, Category } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 function mapPrismaProduct(p: any): Product {
   let images = [];
   try {

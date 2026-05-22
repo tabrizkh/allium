@@ -1,6 +1,8 @@
 import { getCardTemplates } from "@/app/actions/addons";
 import SettingsPage from "@/components/admin/SettingsPage";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   const cardTemplates = await getCardTemplates();
 
