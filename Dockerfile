@@ -13,10 +13,12 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate Prisma client
-RUN npx prisma generate
+# Provide a dummy DATABASE_URL during build time to avoid validation errors
+RUN DATABASE_URL="postgresql://postgres:password@localhost:5432/db" npx prisma generate
 
 ENV NEXT_TELEMETRY_DISABLED 1
-RUN npm run build
+# Provide a dummy DATABASE_URL during build time for Next.js build
+RUN DATABASE_URL="postgresql://postgres:password@localhost:5432/db" npm run build
 
 # Stage 3: Runner
 FROM node:20-alpine AS runner

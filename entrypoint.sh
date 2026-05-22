@@ -2,11 +2,10 @@
 
 # Wait for database to be ready
 echo "Waiting for database to be ready..."
-# You can use a more sophisticated check here if needed
-
-# Run migrations or db push
-echo "Running prisma db push..."
-prisma db push --accept-data-loss
+until prisma db push --accept-data-loss; do
+  echo "Database is not ready yet - retrying in 2 seconds..."
+  sleep 2
+done
 
 # Start the application
 echo "Starting application..."
