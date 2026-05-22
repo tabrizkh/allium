@@ -122,6 +122,7 @@ export default async function Home() {
       mediaUrl: s.mediaUrl,
       type: s.type as "image" | "video",
       isActive: s.isActive,
+      categoryId: s.categoryId,
     })),
   })) as Category[];
 
