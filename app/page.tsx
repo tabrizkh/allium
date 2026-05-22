@@ -30,6 +30,7 @@ function mapPrismaProduct(p: any): Product {
       name: p.category.name,
       slug: p.category.slug,
       image: p.category.image,
+      stories: [], // Stories will be populated if needed, or left empty
     },
     isPopular: p.isPopular,
     isTrending: p.isTrending,
