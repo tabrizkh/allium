@@ -252,5 +252,13 @@
       "sister": "Sister",
       "other": "Other"
     }
+  },
+  "maintenance": {
+    "title": "Under Maintenance",
+    "description": "We'll be back soon! We're currently performing maintenance to make the site even better.",
+    "admin_login": "Admin Login",
+    "password_placeholder": "Enter password",
+    "submit": "Login",
+    "error": "Invalid password"
   }
 }

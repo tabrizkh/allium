@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { createPackaging, deletePackaging, createCardTemplate, deleteCardTemplate } from "@/app/actions/addons";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, AlertTriangle } from "lucide-react";
 import Image from "next/image";
 import ImageUpload from "@/components/admin/ImageUpload";
+import { toggleMaintenanceMode } from "@/app/actions/maintenance";
+import { toast } from "sonner";
 
 type CardTemplate = {
   id: string;
@@ -33,11 +35,56 @@ function LanguageTabs({ activeLang, onChange }: { activeLang: string; onChange: 
 
 export default function SettingsPage({
   cardTemplates,
+  initialMaintenanceMode,
 }: {
   cardTemplates: any[];
+  initialMaintenanceMode: boolean;
 }) {
+  const [maintenanceMode, setMaintenanceMode] = useState(initialMaintenanceMode);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleToggleMaintenance = async () => {
+    setIsUpdating(true);
+    const newStatus = !maintenanceMode;
+    const result = await toggleMaintenanceMode(newStatus);
+    if (result.success) {
+      setMaintenanceMode(newStatus);
+      toast.success(newStatus ? "Режим обслуживания включен" : "Режим обслуживания выключен");
+    } else {
+      toast.error("Ошибка при переключении режима обслуживания");
+    }
+    setIsUpdating(false);
+  };
+
   return (
     <div className="space-y-12">
+      <section className="bg-white p-6 rounded-2xl border shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <AlertTriangle className={maintenanceMode ? "text-orange-500" : "text-gray-400"} size={20} />
+              Техническое обслуживание
+            </h2>
+            <p className="text-sm text-gray-500">
+              {maintenanceMode 
+                ? "Сайт закрыт для посетителей. Доступ имеют только администраторы с паролем." 
+                : "Сайт открыт для всех посетителей."}
+            </p>
+          </div>
+          <button
+            onClick={handleToggleMaintenance}
+            disabled={isUpdating}
+            className={`px-6 py-2 rounded-xl font-bold transition-all ${
+              maintenanceMode 
+                ? "bg-orange-500 text-white hover:bg-orange-600" 
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            } disabled:opacity-50`}
+          >
+            {isUpdating ? "Обновление..." : maintenanceMode ? "Выключить" : "Включить"}
+          </button>
+        </div>
+      </section>
+
       <section>
         <h2 className="text-2xl font-bold mb-6">Шаблоны открыток</h2>
         <CardTemplateList initialData={cardTemplates} />

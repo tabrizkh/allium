@@ -247,6 +247,12 @@ model Favorite {
   @@unique([userId, productId])
 }
 
+model GlobalSettings {
+  id              String   @id @default("singleton")
+  maintenanceMode Boolean  @default(false)
+  updatedAt       DateTime @updatedAt
+}
+
 model SliderItem {
   id          String   @id @default(cuid())
   title       String

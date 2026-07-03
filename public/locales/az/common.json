@@ -252,5 +252,13 @@
       "sister": "Bacısına",
       "other": "Digər"
     }
+  },
+  "maintenance": {
+    "title": "Texniki işlər",
+    "description": "Tezliklə qayıdacağıq! Hal-hazırda saytı daha da yaxşılaşdırmaq üçün texniki işlər aparırıq.",
+    "admin_login": "Admin girişi",
+    "password_placeholder": "Şifrəni daxil edin",
+    "submit": "Daxil ol",
+    "error": "Yanlış şifrə"
   }
 }
