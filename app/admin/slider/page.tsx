@@ -10,7 +10,7 @@ export default async function SliderPage() {
 
   // Convert Decimals if any, but SliderItem doesn't have Decimals currently.
   // We just need to make sure it matches the type expected by the component.
-  const serializedItems = items.map(item => ({
+  const serializedItems = items.map((item: any) => ({
     ...item,
     id: item.id,
     title: item.title,

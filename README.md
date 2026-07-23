@@ -29,6 +29,28 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## Deploy on Railway
+
+This project is configured for Railway deployment using the included `Dockerfile`.
+
+Steps:
+
+1. Create a new Railway project and connect your GitHub repository.
+2. Add the PostgreSQL plugin in Railway.
+3. Set these environment variables in Railway:
+   - `DATABASE_URL`
+   - `NEXTAUTH_URL`
+   - `NEXTAUTH_SECRET`
+   - `AWS_ACCESS_KEY_ID`
+   - `AWS_SECRET_ACCESS_KEY`
+   - `AWS_BUCKET_NAME` or `AWS_S3_BUCKET_NAME`
+   - `AWS_REGION`
+   - `NEXT_PUBLIC_WHATSAPP_PHONE` (optional)
+   - `MAINTENANCE_PASSWORD` (optional)
+4. Deploy using Docker; Railway will build from `Dockerfile` and start with `entrypoint.sh`.
+
+Use `.env.example` locally as a reference for the required environment variables.
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.

@@ -17,9 +17,9 @@ export default async function CategoriesPage() {
   });
 
   // Convert Decimal to Number for Client Components serialization
-  const serializedCategories = categories.map(cat => ({
+  const serializedCategories = categories.map((cat: any) => ({
     ...cat,
-    packaging: cat.packaging.map(pkg => ({
+    packaging: cat.packaging.map((pkg: any) => ({
       ...pkg,
       price: Number(pkg.price)
     }))

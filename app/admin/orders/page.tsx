@@ -11,7 +11,7 @@ export default async function AdminOrdersPage() {
     getAllPackaging()
   ]);
 
-  const packagingMap = packagingRaw.reduce((acc: any, p) => {
+  const packagingMap = packagingRaw.reduce((acc: any, p: any) => {
     acc[p.id] = p.name;
     return acc;
   }, {});

@@ -82,7 +82,7 @@ export default async function Home() {
   ]);
 
   // Convert Decimals to numbers for client components
-  const serializedProducts = products.map((p) => {
+  const serializedProducts = products.map((p: any) => {
     let images = [];
     try {
       images = p.images ? JSON.parse(p.images) : [];
@@ -115,9 +115,9 @@ export default async function Home() {
   });
 
   // Map categories to match the expected type
-  const serializedCategories = categories.map((c) => ({
+  const serializedCategories = categories.map((c: any) => ({
     ...c,
-    stories: c.stories.map((s) => ({
+    stories: c.stories.map((s: any) => ({
       id: s.id,
       title: s.title,
       title_en: s.title_en,

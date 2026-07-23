@@ -14,12 +14,12 @@ export default async function CheckoutPage() {
   ]);
 
   // Convert Decimals to numbers for Client Component serialization
-  const packaging = rawPackaging.map(p => ({
+  const packaging = rawPackaging.map((p: any) => ({
     ...p,
     price: Number(p.price)
   }));
 
-  const products = productsRaw.map(p => {
+  const products = productsRaw.map((p: any) => {
     let images = [];
     try {
       images = p.images ? JSON.parse(p.images) : [];
@@ -36,7 +36,7 @@ export default async function CheckoutPage() {
     };
   });
 
-  const categories = categoriesRaw.map(c => ({
+  const categories = categoriesRaw.map((c: any) => ({
     ...c,
     stories: [],
   }));

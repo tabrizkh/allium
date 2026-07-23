@@ -21,7 +21,7 @@ export default async function ProductsPage() {
     }),
   ]);
 
-  const products = productsData.map((product) => ({
+  const products = productsData.map((product: any) => ({
     ...product,
     price: Number(product.price),
     oldPrice: product.oldPrice ? Number(product.oldPrice) : null,
