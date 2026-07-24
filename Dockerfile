@@ -13,12 +13,13 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate Prisma client
-# Provide a dummy DATABASE_URL during build time to avoid validation errors
-RUN DATABASE_URL="postgresql://postgres:Allium1380@localhost:5432/db" npx prisma generate
+# Build vaxti real baza lazim deyil — bu sadece format yoxlamasi ucun saxta URL-dir.
+# Esl DATABASE_URL runtime-da Railway Variables-den gelir.
+RUN DATABASE_URL="postgresql://build:build@localhost:5432/build-placeholder" npx prisma generate
 
 ENV NEXT_TELEMETRY_DISABLED=1
-# Provide a dummy DATABASE_URL during build time for Next.js build
-RUN DATABASE_URL="postgresql://postgres:Allium1380@localhost:5432/db" npm run build
+# Build vaxti da saxta URL kifayetdir — sehifeler runtime-da render olunur
+RUN DATABASE_URL="postgresql://build:build@localhost:5432/build-placeholder" npm run build
 
 # Stage 3: Runner
 FROM node:20-alpine AS runner
